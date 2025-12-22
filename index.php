@@ -1,3 +1,5 @@
+
+<?php include 'db_connect.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +35,7 @@
             overflow-x: hidden;
             line-height: 1.6;
         }
+
 
         /* Header Navigation */
         .navbar {
@@ -858,7 +861,7 @@
                 <li><a href="#contact">Contact</a></li>
             </ul>
             <div class="nav-buttons">
-                <button class="btn btn-outline">Login</button>
+                <a href="login.php" class="btn btn-outline">Login</a>
                 <button class="btn btn-primary">Register</button>
             </div>
         </div>
