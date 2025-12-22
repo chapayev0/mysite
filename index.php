@@ -854,11 +854,9 @@
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#classes">Classes</a></li>
-                <li><a href="#institutes">Institutes</a></li>
                 <li><a href="#online">Online Classes</a></li>
                 <li><a href="#store">Store</a></li>
-                <li><a href="#testimonials">Testimonials</a></li>
-                <li><a href="#contact">Contact</a></li>
+
             </ul>
             <div class="nav-buttons">
                 <a href="login.php" class="btn btn-outline">Login</a>
