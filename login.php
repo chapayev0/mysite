@@ -5,13 +5,16 @@ include 'db_connect.php';
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $identifier = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    $sql = "SELECT id, email, username, password, role FROM users WHERE username = '$username'";
-    $result = $conn->query($sql);
+    // Try to find user by email or username (prepared statement)
+    $stmt = $conn->prepare('SELECT id, email, IFNULL(username, "") as username, password, role FROM users WHERE email = ? OR username = ? LIMIT 1');
+    $stmt->bind_param('ss', $identifier, $identifier);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if ($result->num_rows == 1) {
+    if ($result && $result->num_rows == 1) {
         $row = $result->fetch_assoc();
         if (password_verify($password, $row['password'])) {
             $_SESSION['user_id'] = $row['id'];
@@ -31,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $error = "User not found.";
     }
+    if ($stmt) $stmt->close();
 }
 ?>
 <!DOCTYPE html>
