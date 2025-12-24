@@ -5,11 +5,13 @@
  */
 
 // --- CONFIGURATION ---
-$apiKey = ""; // Enter your Gemini API Key here
+$apiKey = "AIzaSyAKI446v5DDUPu6alWQoTdgl4iv1ePm1_k"; // Enter your Gemini API Key here
 
 // --- BACKEND: API PROXY ---
 // This block handles AJAX requests from the frontend to call Gemini
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action'])) {
+    // Prevent PHP warnings/notices from breaking the JSON response
+    ini_set('display_errors', 0);
     header('Content-Type: application/json');
     
     $input = json_decode(file_get_contents('php://input'), true);
@@ -67,9 +69,9 @@ $slides = [
         "type" => "process_flow",
         "title" => "පරිගණකය යනු කුමක්ද?",
         "items" => [
-            ["title" => "දත්ත (Data)", "desc" => "ලබා ගැනීම", "color" => "text-yellow-300", "img" => "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "සකස් කිරීම (Process)", "desc" => "දත්ත සකස් කිරීම", "color" => "text-orange-300", "img" => "https://images.unsplash.com/photo-1555617981-d249f6063eb3?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "තොරතුරු (Information)", "desc" => "ලෙස ලබා දීම", "color" => "text-green-300", "img" => "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&auto=format&fit=crop&q=60"]
+            ["title" => "දත්ත (Data)", "desc" => "ලබා ගැනීම", "color" => "text-yellow-300", "img" => "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "සකස් කිරීම (Process)", "desc" => "දත්ත සකස් කිරීම", "color" => "text-orange-300", "img" => "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "තොරතුරු (Information)", "desc" => "ලෙස ලබා දීම", "color" => "text-green-300", "img" => "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&auto=format&fit=crop&q=60"]
         ],
         "footer" => "💡 \"පරිගණකය යනු දත්ත ගෙන, සකස් කර, තොරතුරු දෙන ඉලෙක්ට්‍රොනික යන්ත්‍රයකි.\""
     ],
@@ -81,8 +83,8 @@ $slides = [
         "title" => "පරිගණකයේ මූලික කාර්ය",
         "cards" => [
             ["title" => "1. ආදානය (Input)", "desc" => "දත්ත ඇතුල් කිරීම", "sub" => "උදා: ගණනක් Type කිරීම", "img" => "https://images.unsplash.com/photo-1587829741301-dc798b91a603?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "2. සැකසීම (Process)", "desc" => "දත්ත විශ්ලේෂණය", "sub" => "උදා: ගණන එකතු කිරීම", "img" => "https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "3. ප්‍රතිදානය (Output)", "desc" => "ප්‍රතිඵල ලබාදීම", "sub" => "උදා: පිළිතුර පෙන්වීම", "img" => "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&auto=format&fit=crop&q=60"]
+            ["title" => "2. සැකසීම (Process)", "desc" => "දත්ත විශ්ලේෂණය", "sub" => "උදා: ගණන එකතු කිරීම", "img" => "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "3. ප්‍රතිදානය (Output)", "desc" => "ප්‍රතිඵල ලබාදීම", "sub" => "උදා: පිළිතුර පෙන්වීම", "img" => "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&auto=format&fit=crop&q=60"]
         ]
     ],
     [
@@ -123,10 +125,10 @@ $slides = [
         "subtitle" => "පරිගණකයට දත්ත ඇතුල් කිරීමට භාවිතා කරයි",
         "items" => [
             ["title" => "Keyboard", "desc" => "යතුරු පුවරුව", "img" => "https://images.unsplash.com/photo-1587829741301-dc798b91a603?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "Mouse", "desc" => "මූසිකය", "img" => "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "Scanner", "desc" => "ස්කෑනරය", "img" => "https://images.unsplash.com/photo-1588611910609-0d19f0742f9b?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "Mouse", "desc" => "මූසිකය", "img" => "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "Scanner", "desc" => "ස්කෑනරය", "img" => "https://images.unsplash.com/photo-1612815154858-60aa4c46ae43?w=400&auto=format&fit=crop&q=60"],
             ["title" => "Microphone", "desc" => "මයික්‍රොෆෝනය", "img" => "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "Web Camera", "desc" => "වෙබ් කැමරාව", "img" => "https://images.unsplash.com/photo-1516542076529-1ea3854896f2?w=400&auto=format&fit=crop&q=60"]
+            ["title" => "Web Camera", "desc" => "වෙබ් කැමරාව", "img" => "https://images.unsplash.com/photo-1616423664074-907f88512b91?w=400&auto=format&fit=crop&q=60"]
         ]
     ],
     [
@@ -177,7 +179,7 @@ $slides = [
         "items" => [
             ["title" => "Hard Disk", "desc" => "දෘඪ තැටිය", "img" => "https://images.unsplash.com/photo-1531492326752-af3170d10b06?w=400&auto=format&fit=crop&q=60"],
             ["title" => "Pen Drive", "desc" => "පෙන් ඩ්‍රයිව්", "img" => "https://images.unsplash.com/photo-1620400539828-090c8859e942?w=400&auto=format&fit=crop&q=60"],
-            ["title" => "CD / DVD", "desc" => "තැටි", "img" => "https://images.unsplash.com/photo-1622329244087-0b15b5072047?w=400&auto=format&fit=crop&q=60"],
+            ["title" => "CD / DVD", "desc" => "තැටි", "img" => "https://images.unsplash.com/photo-1600080972464-8cb00874117e?w=400&auto=format&fit=crop&q=60"],
             ["title" => "Ext. Hard Disk", "desc" => "බාහිර දෘඪ තැටිය", "img" => "https://images.unsplash.com/photo-1581446738981-d1c9b60b643a?w=400&auto=format&fit=crop&q=60"]
         ]
     ],
@@ -244,9 +246,25 @@ $slides = [
         .hidden-slide { display: none !important; }
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #3498db; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom scrollbar for slides */
+        .slide-content-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .slide-content-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 4px;
+        }
+        .slide-content-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3); 
+            border-radius: 4px;
+        }
+        .slide-content-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5); 
+        }
     </style>
 </head>
-<body class="overflow-hidden bg-gray-900">
+<body class="overflow-hidden bg-gray-900 text-white">
 
     <!-- SLIDE CONTAINER -->
     <div id="presentation-container" class="w-full h-screen relative flex flex-col transition-colors duration-700">
@@ -258,47 +276,49 @@ $slides = [
                  data-bg="<?php echo $slide['bg']; ?>"
                  data-topic="<?php echo $slide['topic']; ?>">
                 
-                <div class="w-full max-w-7xl">
+                <!-- Inner Container with scroll logic -->
+                <div class="w-full max-w-7xl h-full overflow-y-auto slide-content-scroll flex flex-col items-center pb-24">
                     
                     <!-- Intro Type -->
                     <?php if ($slide['type'] === 'intro'): ?>
-                        <div class="flex flex-col items-center justify-center text-white text-center">
-                            <div class="mb-8 p-2 bg-white/10 rounded-2xl backdrop-blur-md border-4 border-white/30 shadow-2xl overflow-hidden">
-                                <img src="<?php echo $slide['image']; ?>" class="w-[600px] h-[350px] object-cover rounded-xl" alt="Intro">
+                        <div class="flex flex-col items-center justify-center text-white text-center w-full my-auto">
+                            <div class="mb-8 p-2 bg-white/10 rounded-2xl backdrop-blur-md border-4 border-white/30 shadow-2xl overflow-hidden max-w-full">
+                                <img src="<?php echo $slide['image']; ?>" class="w-full max-w-[600px] h-auto md:h-[350px] object-cover rounded-xl" alt="Intro">
                             </div>
-                            <h1 class="text-6xl font-bold mb-6 drop-shadow-lg text-yellow-300"><?php echo $slide['title']; ?></h1>
+                            <h1 class="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg text-yellow-300"><?php echo $slide['title']; ?></h1>
                             <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-sm border border-white/20 w-full max-w-2xl">
-                                <h2 class="text-3xl font-semibold mb-3 text-white"><?php echo $slide['subtitle1']; ?></h2>
-                                <h3 class="text-2xl mb-2 text-blue-200"><?php echo $slide['subtitle2']; ?></h3>
-                                <p class="text-xl mt-4 opacity-90 text-white">සාදරයෙන් පිළිගනිමු!</p>
+                                <h2 class="text-2xl md:text-3xl font-semibold mb-3 text-white"><?php echo $slide['subtitle1']; ?></h2>
+                                <h3 class="text-xl md:text-2xl mb-2 text-blue-200"><?php echo $slide['subtitle2']; ?></h3>
+                                <p class="text-lg md:text-xl mt-4 opacity-90 text-white">සාදරයෙන් පිළිගනිමු!</p>
                             </div>
                         </div>
                     
                     <!-- Process Flow Type -->
                     <?php elseif ($slide['type'] === 'process_flow'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-10 border-b-4 border-yellow-400 pb-2"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center w-full p-4 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-10 border-b-4 border-yellow-400 pb-2 text-center"><?php echo $slide['title']; ?></h2>
                             <div class="flex flex-col md:flex-row items-center justify-center gap-6 w-full mb-8">
                                 <?php foreach ($slide['items'] as $k => $item): ?>
-                                    <div class="flex flex-col items-center bg-white/10 p-4 rounded-xl w-72 h-80 justify-center border-2 border-white/30 hover:scale-105 transition-transform">
-                                        <img src="<?php echo $item['img']; ?>" class="w-48 h-32 object-cover rounded-lg mb-4 shadow-lg">
+                                    <div class="flex flex-col items-center bg-white/10 p-4 rounded-xl w-full max-w-[300px] border-2 border-white/30 hover:scale-105 transition-transform">
+                                        <img src="<?php echo $item['img']; ?>" class="w-full h-32 object-cover rounded-lg mb-4 shadow-lg">
                                         <h3 class="text-2xl font-bold <?php echo $item['color']; ?>"><?php echo $item['title']; ?></h3>
                                         <p class="text-sm mt-2 text-center"><?php echo $item['desc']; ?></p>
                                     </div>
                                     <?php if ($k < count($slide['items']) - 1): ?>
-                                        <i data-lucide="arrow-right" class="w-12 h-12 text-white animate-pulse"></i>
+                                        <div class="hidden md:block"><i data-lucide="arrow-right" class="w-12 h-12 text-white animate-pulse"></i></div>
+                                        <div class="block md:hidden"><i data-lucide="arrow-down" class="w-12 h-12 text-white animate-pulse"></i></div>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </div>
                             <div class="bg-blue-900/60 p-4 rounded-lg mt-2 backdrop-blur-sm">
-                                <p class="text-xl md:text-2xl"><?php echo $slide['footer']; ?></p>
+                                <p class="text-lg md:text-2xl text-center"><?php echo $slide['footer']; ?></p>
                             </div>
                         </div>
 
                     <!-- Cards Type -->
                     <?php elseif ($slide['type'] === 'cards'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-8"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center w-full p-4 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center"><?php echo $slide['title']; ?></h2>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
                                 <?php foreach ($slide['cards'] as $card): ?>
                                     <div class="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-xl flex flex-col items-center">
@@ -313,10 +333,10 @@ $slides = [
 
                     <!-- Grid Type -->
                     <?php elseif ($slide['type'] === 'grid'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-6">
-                            <h2 class="text-4xl font-bold mb-4"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center w-full p-4 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center"><?php echo $slide['title']; ?></h2>
                             <?php if(isset($slide['subtitle'])): ?>
-                                <p class="text-xl mb-6 opacity-90"><?php echo $slide['subtitle']; ?></p>
+                                <p class="text-lg md:text-xl mb-6 opacity-90 text-center"><?php echo $slide['subtitle']; ?></p>
                             <?php else: ?>
                                 <div class="mb-8"></div>
                             <?php endif; ?>
@@ -328,8 +348,10 @@ $slides = [
                                         <div class="w-full h-32 overflow-hidden rounded-xl mb-3 bg-white">
                                             <img src="<?php echo $item['img']; ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                         </div>
-                                        <h3 class="text-xl font-bold mb-2 text-yellow-200"><?php echo $item['title']; ?></h3>
-                                        <p class="text-center text-sm text-white/90"><?php echo $item['desc']; ?></p>
+                                        <h3 class="text-lg md:text-xl font-bold mb-2 text-yellow-200 text-center"><?php echo $item['title']; ?></h3>
+                                        <?php if(isset($item['desc'])): ?>
+                                            <p class="text-center text-xs md:text-sm text-white/90"><?php echo $item['desc']; ?></p>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -337,15 +359,15 @@ $slides = [
 
                     <!-- Central Image Type -->
                     <?php elseif ($slide['type'] === 'central_image'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-6 text-blue-300"><?php echo $slide['title']; ?></h2>
-                            <div class="relative w-full max-w-4xl h-[500px] bg-slate-800 rounded-3xl overflow-hidden border-2 border-slate-600 shadow-2xl">
+                        <div class="flex flex-col items-center w-full p-8 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-blue-300 text-center"><?php echo $slide['title']; ?></h2>
+                            <div class="relative w-full max-w-4xl h-[300px] md:h-[500px] bg-slate-800 rounded-3xl overflow-hidden border-2 border-slate-600 shadow-2xl">
                                 <img src="<?php echo $slide['image']; ?>" class="w-full h-full object-cover opacity-50">
-                                <div class="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-8">
+                                <div class="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-4 overflow-y-auto">
                                     <?php foreach ($slide['labels'] as $label): ?>
-                                        <div class="bg-slate-800/80 p-4 rounded-xl border text-center w-64 <?php echo $label['color']; ?>">
-                                            <h3 class="text-xl font-bold"><?php echo $label['text']; ?></h3>
-                                            <p class="text-sm text-white"><?php echo $label['sub']; ?></p>
+                                        <div class="bg-slate-800/80 p-2 md:p-4 rounded-xl border text-center w-40 md:w-64 <?php echo $label['color']; ?> backdrop-blur-sm">
+                                            <h3 class="text-md md:text-xl font-bold"><?php echo $label['text']; ?></h3>
+                                            <p class="text-xs md:text-sm text-white"><?php echo $label['sub']; ?></p>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -354,17 +376,17 @@ $slides = [
 
                     <!-- Feature Split Type (CPU) -->
                     <?php elseif ($slide['type'] === 'feature_split'): ?>
-                        <div class="flex flex-col items-center justify-center h-full text-white p-8">
-                            <h2 class="text-5xl font-bold mb-8 text-yellow-200"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center justify-center w-full p-8 my-auto">
+                            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-yellow-200 text-center"><?php echo $slide['title']; ?></h2>
                             <div class="flex flex-col md:flex-row items-center gap-12">
-                                <div class="bg-white p-4 rounded-3xl shadow-2xl border-4 border-yellow-500 rotate-3 hover:rotate-0 transition-transform duration-500">
-                                    <img src="<?php echo $slide['image']; ?>" class="w-80 h-80 object-cover rounded-2xl">
+                                <div class="bg-white p-4 rounded-3xl shadow-2xl border-4 border-yellow-500 rotate-3 hover:rotate-0 transition-transform duration-500 shrink-0">
+                                    <img src="<?php echo $slide['image']; ?>" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl">
                                 </div>
                                 <div class="bg-black/30 p-8 rounded-2xl max-w-lg backdrop-blur-md border border-white/20">
-                                    <ul class="space-y-6 text-2xl font-semibold">
+                                    <ul class="space-y-6 text-xl md:text-2xl font-semibold">
                                         <?php foreach ($slide['points'] as $point): ?>
                                             <li class="flex items-center gap-4">
-                                                <i data-lucide="<?php echo $point['icon']; ?>" class="w-10 h-10 <?php echo $point['color']; ?>"></i>
+                                                <i data-lucide="<?php echo $point['icon']; ?>" class="w-8 h-8 md:w-10 md:h-10 shrink-0 <?php echo $point['color']; ?>"></i>
                                                 <span><?php echo $point['text']; ?></span>
                                             </li>
                                         <?php endforeach; ?>
@@ -375,26 +397,26 @@ $slides = [
 
                     <!-- Memory Slide Type -->
                     <?php elseif ($slide['type'] === 'memory_slide'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-8"><?php echo $slide['title']; ?></h2>
-                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/30 text-center max-w-4xl flex flex-col items-center">
-                                <img src="<?php echo $slide['image']; ?>" class="w-full max-w-lg h-64 object-cover rounded-xl mb-6 shadow-2xl border-2 border-green-400">
-                                <p class="text-3xl font-semibold mb-6"><?php echo $slide['main_text']; ?></p>
+                        <div class="flex flex-col items-center w-full p-8 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center"><?php echo $slide['title']; ?></h2>
+                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/30 text-center max-w-4xl flex flex-col items-center w-full">
+                                <img src="<?php echo $slide['image']; ?>" class="w-full max-w-lg h-48 md:h-64 object-cover rounded-xl mb-6 shadow-2xl border-2 border-green-400">
+                                <p class="text-2xl md:text-3xl font-semibold mb-6"><?php echo $slide['main_text']; ?></p>
                                 <div class="bg-red-600/80 p-6 rounded-xl flex items-center gap-4 border border-red-400 w-full max-w-2xl">
                                     <span class="text-4xl">💡❌</span>
-                                    <p class="text-xl text-left"><?php echo $slide['warning_text']; ?></p>
+                                    <p class="text-lg md:text-xl text-left"><?php echo $slide['warning_text']; ?></p>
                                 </div>
                             </div>
                         </div>
 
                     <!-- Communication Slide Type -->
                     <?php elseif ($slide['type'] === 'communication_slide'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-8"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center w-full p-8 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center"><?php echo $slide['title']; ?></h2>
                             <div class="flex flex-col items-center justify-center gap-8 bg-white/10 backdrop-blur-md p-8 rounded-3xl w-full max-w-4xl border border-white/20">
                                 <div class="flex flex-col md:flex-row justify-around w-full items-center gap-8">
-                                    <div class="bg-white p-2 rounded-xl">
-                                        <img src="<?php echo $slide['router_img']; ?>" class="w-64 h-48 object-cover rounded-lg">
+                                    <div class="bg-white p-2 rounded-xl w-full md:w-auto">
+                                        <img src="<?php echo $slide['router_img']; ?>" class="w-full md:w-64 h-48 object-cover rounded-lg">
                                         <p class="text-black text-center font-bold mt-2">Router (රවුටරය)</p>
                                     </div>
                                     <div class="hidden md:block">
@@ -404,30 +426,30 @@ $slides = [
                                             <span class="w-4 h-4 bg-green-400 rounded-full animate-pulse delay-200"></span>
                                         </div>
                                     </div>
-                                    <div class="bg-white p-2 rounded-xl">
-                                        <img src="<?php echo $slide['network_img']; ?>" class="w-64 h-48 object-cover rounded-lg">
+                                    <div class="bg-white p-2 rounded-xl w-full md:w-auto">
+                                        <img src="<?php echo $slide['network_img']; ?>" class="w-full md:w-64 h-48 object-cover rounded-lg">
                                         <p class="text-black text-center font-bold mt-2">Network (ජාලය)</p>
                                     </div>
                                 </div>
                                 <div class="bg-blue-900/50 p-4 rounded-xl w-full text-center">
-                                    <p class="text-2xl font-bold"><?php echo $slide['footer']; ?></p>
+                                    <p class="text-xl md:text-2xl font-bold"><?php echo $slide['footer']; ?></p>
                                 </div>
                             </div>
                         </div>
 
                     <!-- Software List Type -->
                     <?php elseif ($slide['type'] === 'software_list'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-8">
-                            <h2 class="text-4xl font-bold mb-8"><?php echo $slide['title']; ?></h2>
-                            <p class="text-xl mb-8"><?php echo $slide['subtitle']; ?></p>
+                        <div class="flex flex-col items-center w-full p-8 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center"><?php echo $slide['title']; ?></h2>
+                            <p class="text-lg md:text-xl mb-8 text-center"><?php echo $slide['subtitle']; ?></p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl">
                                 <?php foreach ($slide['items'] as $item): ?>
                                     <div class="bg-white/20 backdrop-blur-sm p-4 rounded-xl flex items-center gap-4 shadow-lg hover:bg-white/30 transition">
-                                        <img src="<?php echo $item['img']; ?>" class="w-20 h-20 object-cover rounded-lg border-2 border-white/50">
+                                        <img src="<?php echo $item['img']; ?>" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border-2 border-white/50 shrink-0">
                                         <div class="flex-grow">
-                                            <h3 class="text-xl font-bold"><?php echo $item['title']; ?></h3>
+                                            <h3 class="text-lg md:text-xl font-bold"><?php echo $item['title']; ?></h3>
                                         </div>
-                                        <div class="bg-white text-black px-4 py-1 rounded-full text-sm font-bold shadow"><?php echo $item['sub']; ?></div>
+                                        <div class="bg-white text-black px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm font-bold shadow whitespace-nowrap"><?php echo $item['sub']; ?></div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -435,35 +457,35 @@ $slides = [
 
                     <!-- Fields Grid Type -->
                     <?php elseif ($slide['type'] === 'fields_grid'): ?>
-                        <div class="flex flex-col items-center h-full text-white p-6">
-                            <h2 class="text-4xl font-bold mb-6"><?php echo $slide['title']; ?></h2>
+                        <div class="flex flex-col items-center w-full p-6 my-auto">
+                            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-center"><?php echo $slide['title']; ?></h2>
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8 w-full max-w-6xl">
                                 <?php foreach ($slide['items'] as $item): ?>
                                     <div class="bg-white/20 p-3 rounded-xl flex flex-col items-center justify-center border border-white/30 hover:bg-white/30 transition shadow-lg group">
-                                        <div class="w-full h-40 overflow-hidden rounded-lg mb-2">
+                                        <div class="w-full h-32 md:h-40 overflow-hidden rounded-lg mb-2">
                                             <img src="<?php echo $item['img']; ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                         </div>
-                                        <h3 class="text-xl font-bold text-white mt-2"><?php echo $item['title']; ?></h3>
+                                        <h3 class="text-lg md:text-xl font-bold text-white mt-2 text-center"><?php echo $item['title']; ?></h3>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                            <div class="bg-white text-green-700 p-6 rounded-2xl shadow-2xl text-center transform hover:scale-105 transition-transform">
-                                <h3 class="text-3xl font-bold"><?php echo $slide['conclusion']['title']; ?></h3>
-                                <p class="text-xl mt-2 font-semibold"><?php echo $slide['conclusion']['text']; ?></p>
+                            <div class="bg-white text-green-700 p-6 rounded-2xl shadow-2xl text-center transform hover:scale-105 transition-transform w-full max-w-2xl">
+                                <h3 class="text-2xl md:text-3xl font-bold"><?php echo $slide['conclusion']['title']; ?></h3>
+                                <p class="text-lg md:text-xl mt-2 font-semibold"><?php echo $slide['conclusion']['text']; ?></p>
                                 <p class="text-sm mt-4 text-gray-500"><?php echo $slide['conclusion']['sub']; ?></p>
                             </div>
                         </div>
 
                     <?php endif; ?>
-
+                
                 </div>
             </div>
         <?php endforeach; ?>
 
         <!-- CONTROLS BAR -->
-        <div class="absolute bottom-0 w-full h-16 bg-black/30 backdrop-blur-md flex justify-between items-center px-8 text-white z-40">
-            <div class="font-bold text-lg">6 ශ්‍රේණිය - ICT</div>
-            <div class="flex items-center gap-6">
+        <div class="absolute bottom-0 w-full h-16 bg-black/30 backdrop-blur-md flex justify-between items-center px-8 text-white z-40 border-t border-white/10">
+            <div class="font-bold text-lg hidden md:block">6 ශ්‍රේණිය - ICT</div>
+            <div class="flex items-center gap-6 mx-auto md:mx-0">
                 <button onclick="prevSlide()" id="btn-prev" class="p-2 rounded-full hover:bg-white/20 transition opacity-30 cursor-not-allowed">
                     <i data-lucide="chevron-left" class="w-8 h-8"></i>
                 </button>
@@ -624,7 +646,7 @@ $slides = [
 
         async function callGemini(prompt) {
             try {
-                const response = await fetch('presentation.php?action=call_api', {
+                const response = await fetch('?action=call_api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: prompt })

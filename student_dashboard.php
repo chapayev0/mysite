@@ -116,66 +116,112 @@ if ($result->num_rows > 0) {
     <div class="sidebar">
         <div class="logo">TechLearn Student</div>
         <nav>
-            <a href="student_dashboard.php" class="nav-link active">My Profile</a>
+            <a href="student_dashboard.php" class="nav-link active">Dashboard</a>
+            <a href="student_profile.php" class="nav-link">Profile</a>
             <a href="logout.php" class="nav-link">Logout</a>
         </nav>
     </div>
     <div class="main-content">
-        <div class="card">
-            <?php if(isset($student)): ?>
-                <h2>My Profile</h2>
-                
-                <div class="profile-grid">
-                    <div class="section-header">Personal Information</div>
-                    
-                    <div class="profile-item">
-                        <span class="label">First Name</span>
-                        <div class="value"><?php echo htmlspecialchars($student['first_name']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Last Name</span>
-                        <div class="value"><?php echo htmlspecialchars($student['last_name']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Grade</span>
-                        <div class="value"><?php echo htmlspecialchars($student['grade']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Date of Birth</span>
-                        <div class="value"><?php echo htmlspecialchars($student['dob']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Phone</span>
-                        <div class="value"><?php echo htmlspecialchars($student['phone']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Gender</span>
-                        <div class="value"><?php echo htmlspecialchars($student['gender']); ?></div>
-                    </div>
-                    <div class="profile-item full-width">
-                        <span class="label">Address</span>
-                        <div class="value"><?php echo htmlspecialchars($student['address']); ?></div>
-                    </div>
+        <h1 style="color: var(--dark); margin-bottom: 2rem;">Welcome, <?php echo htmlspecialchars($student['first_name']); ?>!</h1>
 
-                    <div class="section-header">Parent Information</div>
-                    
-                    <div class="profile-item">
-                        <span class="label">Parent Name</span>
-                        <div class="value"><?php echo htmlspecialchars($student['parent_name']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <span class="label">Relationship</span>
-                        <div class="value"><?php echo htmlspecialchars($student['parent_relationship']); ?></div>
-                    </div>
-                    <div class="profile-item full-width">
-                        <span class="label">Parent Contact</span>
-                        <div class="value"><?php echo htmlspecialchars($student['parent_contact']); ?></div>
+        <?php
+        // Fetch resources for the student's grade
+        $student_grade = $student['grade'] ?? '';
+        $resources = [];
+        if ($student_grade) {
+            // New system: Grade is just a number (e.g. '6')
+            // We search for this specific grade in the resources table.
+            // If the database still has old 'g6' entries, we might miss them unless we include them.
+            // But user said "renamed g6 to 6", implying the structure is updated.
+            // Let's stick to the student's grade value, but ensure we strip 'g' if it exists in the student's profile just in case.
+            
+            $clean_grade = str_replace('g', '', strtolower($student_grade));
+            
+            // We search for the clean grade (e.g. '6')
+            // Note: If you have old resources stored as 'g6', they won't show unless we search for 'g'.$clean_grade too.
+            // I will keep both for safety: '6' and 'g6' to ensure nothing breaks during transition.
+            
+            $grade_variants = [$clean_grade, 'g' . $clean_grade];
+            
+            // Create a comma-separated string of placeholders for the IN clause
+            $placeholders = implode(',', array_fill(0, count($grade_variants), '?'));
+            $types = str_repeat('s', count($grade_variants));
+            
+            $stmt = $conn->prepare("SELECT * FROM resources WHERE grade IN ($placeholders) ORDER BY created_at DESC");
+            $stmt->bind_param($types, ...$grade_variants);
+            
+            $stmt->execute();
+            $res = $stmt->get_result();
+            while ($row = $res->fetch_assoc()) {
+                $resources[$row['category']][] = $row;
+            }
+            $stmt->close();
+        }
+        
+        $categories = [
+            'theory' => 'Theory',
+            'tute' => 'Tutes',
+            'paper' => 'Papers'
+        ];
+        
+        $hasResources = false;
+        foreach($categories as $catKey => $catName) {
+            if(!empty($resources[$catKey])) {
+                $hasResources = true;
+                break;
+            }
+        }
+        ?>
+
+        <?php if(!$hasResources): ?>
+             <div class="card">
+                <p style="color: var(--gray); font-size: 1.1rem;">No resources available for your grade yet.</p>
+             </div>
+        <?php endif; ?>
+
+        <?php foreach ($categories as $catKey => $catName): ?>
+            <?php if (!empty($resources[$catKey])): ?>
+                <!-- Section Container for <?php echo $catName; ?> -->
+                <div style="margin-bottom: 4rem; display: flow-root; border-bottom: 1px solid transparent;">
+                    <h2 style="color: var(--dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 2rem;"><?php echo $catName; ?></h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+                        <?php foreach ($resources[$catKey] as $resource): ?>
+                            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; height: 100%;">
+                                <div style="flex: 1;">
+                                    <span style="background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                        Grade <?php echo htmlspecialchars($resource['grade']); ?>
+                                    </span>
+                                    <h3 style="margin: 1rem 0 0.5rem 0; color: var(--dark); font-size: 1.3rem; word-wrap: break-word; overflow-wrap: break-word;">
+                                        <?php if(!empty($resource['lesson_number'])): ?>
+                                            <span style="font-size: 0.9rem; color: var(--primary); display: block; margin-bottom: 0.2rem;">
+                                                <?php 
+                                                    $ln = $resource['lesson_number'];
+                                                    // Add 'Lesson ' prefix for theory cards if not already present
+                                                    if ($catKey === 'theory' && stripos($ln, 'Lesson') === false) {
+                                                        $ln = 'Lesson ' . $ln;
+                                                    }
+                                                    echo htmlspecialchars($ln); 
+                                                ?>
+                                            </span>
+                                        <?php endif; ?>
+                                        <?php echo htmlspecialchars($resource['title']); ?>
+                                    </h3>
+                                    <?php if (!empty($resource['description'])): ?>
+                                        <p style="color: var(--gray); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; word-wrap: break-word; overflow-wrap: break-word;">
+                                            <?php echo htmlspecialchars($resource['description']); ?>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                                <a href="<?php echo htmlspecialchars($resource['filepath']); ?>" target="_blank" 
+                                   style="display: inline-block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; margin-top: auto; transition: background 0.2s;">
+                                    Open
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
-            <?php else: ?>
-                <p>Profile information unavailable.</p>
             <?php endif; ?>
-        </div>
+        <?php endforeach; ?>
     </div>
 </body>
 </html>

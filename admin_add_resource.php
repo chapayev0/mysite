@@ -54,8 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (move_uploaded_file($file['tmp_name'], $target_path)) {
                         // store record
                         $relpath = 'classes/' . $grade . '/' . $category . '/' . $safe_name;
-                        $stmt = $conn->prepare('INSERT INTO resources (title, description, filename, filepath, category, grade, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)');
-                        $stmt->bind_param('ssssssi', $title, $description, $safe_name, $relpath, $category, $grade, $_SESSION['user_id']);
+                        $lesson_number = $_POST['lesson_number'] ?? '';
+                        $stmt = $conn->prepare('INSERT INTO resources (lesson_number, title, description, filename, filepath, category, grade, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+                        $stmt->bind_param('sssssssi', $lesson_number, $title, $description, $safe_name, $relpath, $category, $grade, $_SESSION['user_id']);
                         if ($stmt->execute()) {
                             $message = 'Resource uploaded successfully.';
                         } else {
@@ -124,6 +125,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="materials">Materials</option>
                         </select>
                     </div>
+                </div>
+
+                <div style="margin-bottom:12px">
+                    <label for="lesson_number">Lesson Number</label>
+                    <input type="text" id="lesson_number" name="lesson_number" placeholder="e.g. Lesson 1" required>
                 </div>
 
                 <div style="margin-bottom:12px">
