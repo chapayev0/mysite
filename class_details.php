@@ -1,10 +1,30 @@
-<?php include 'db_connect.php'; ?>
+<?php 
+include 'db_connect.php'; 
+
+// Validate and clean the grade input
+$grade = isset($_GET['grade']) ? intval($_GET['grade']) : 0;
+// Only allow grades 6-11
+if ($grade < 6 || $grade > 11) {
+    header("Location: index.php");
+    exit();
+}
+
+$classes = [];
+$stmt = $conn->prepare("SELECT * FROM classes WHERE grade = ?");
+$stmt->bind_param("i", $grade);
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $classes[] = $row;
+}
+$stmt->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade 6 ICT Classes | TechLearn</title>
+    <title>Grade <?php echo $grade; ?> ICT Classes | TechLearn</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -34,6 +54,9 @@
             color: var(--dark);
             overflow-x: hidden;
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         /* Navbar Styles (Copied from index.php) */
@@ -149,6 +172,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 3rem;
+            flex-grow: 1;
         }
 
         .institute-card {
@@ -281,6 +305,7 @@
             color: var(--dark);
             padding: 4rem 2rem 2rem;
             border-top: 1px solid var(--border);
+            margin-top: auto;
         }
 
         .footer-content {
@@ -405,93 +430,61 @@
 
     <!-- Page Header -->
     <header class="page-header">
-        <h1 class="page-title">Grade 6 ICT Classes</h1>
-        <p class="page-subtitle">Start your journey into the digital world with our comprehensive Grade 6 curriculum available at these leading institutes.</p>
+        <h1 class="page-title">Grade <?php echo $grade; ?> ICT Classes</h1>
+        <p class="page-subtitle">Start your journey into the digital world with our comprehensive Grade <?php echo $grade; ?> curriculum available at these leading institutes.</p>
     </header>
 
     <!-- Institutes Cards -->
     <section class="institutes-grid">
-        <!-- Card 1 -->
-        <div class="institute-card">
-            <div class="card-header">
-                <div class="institute-logo-placeholder">🏫</div>
-                <h3 class="institute-name">Institute A</h3>
+        <?php if (empty($classes)): ?>
+            <div style="grid-column: span 2; text-align: center; color: var(--gray); font-size: 1.2rem; padding: 4rem;">
+                <p>No classes scheduled for Grade <?php echo $grade; ?> at the moment. Please check back later.</p>
             </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <div class="info-icon">📍</div>
-                    <div class="info-content">
-                        <div class="info-label">Address</div>
-                        <div class="info-value">123 Main Street, Colombo 05</div>
+        <?php else: ?>
+            <?php foreach ($classes as $class): ?>
+                <div class="institute-card">
+                    <div class="card-header">
+                        <div class="institute-logo-placeholder"><?php echo htmlspecialchars($class['logo_emoji']); ?></div>
+                        <h3 class="institute-name"><?php echo htmlspecialchars($class['institute_name']); ?></h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <div class="info-icon">📍</div>
+                            <div class="info-content">
+                                <div class="info-label">Address</div>
+                                <div class="info-value"><?php echo htmlspecialchars($class['institute_address']); ?></div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon">📞</div>
+                            <div class="info-content">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value"><?php echo htmlspecialchars($class['institute_phone']); ?></div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon">📅</div>
+                            <div class="info-content">
+                                <div class="info-label">Class Day</div>
+                                <div class="info-value"><?php echo htmlspecialchars($class['class_day']); ?></div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon">⏰</div>
+                            <div class="info-content">
+                                <div class="info-label">Time</div>
+                                <div class="info-value"><?php echo htmlspecialchars($class['start_time']) . ' - ' . htmlspecialchars($class['end_time']); ?></div>
+                            </div>
+                        </div>
+                        <?php if (!empty($class['description'])): ?>
+                            <div class="description">
+                                <?php echo htmlspecialchars($class['description']); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <div class="info-row">
-                    <div class="info-icon">📞</div>
-                    <div class="info-content">
-                        <div class="info-label">Phone</div>
-                        <div class="info-value">+94 77 123 4567</div>
-                    </div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon">📅</div>
-                    <div class="info-content">
-                        <div class="info-label">Class Day</div>
-                        <div class="info-value">Saturday</div>
-                    </div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon">⏰</div>
-                    <div class="info-content">
-                        <div class="info-label">Time</div>
-                        <div class="info-value">8:00 AM - 10:00 AM</div>
-                    </div>
-                </div>
-                <div class="description">
-                    Join our vibrant Grade 6 batch at Institute A. We focus on building a strong foundation in computer basics, typing skills, and introduction to coding in a friendly environment.
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="institute-card">
-            <div class="card-header">
-                <div class="institute-logo-placeholder">🏛️</div>
-                <h3 class="institute-name">Institute B</h3>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <div class="info-icon">📍</div>
-                    <div class="info-content">
-                        <div class="info-label">Address</div>
-                        <div class="info-value">456 High Level Road, Nugegoda</div>
-                    </div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon">📞</div>
-                    <div class="info-content">
-                        <div class="info-label">Phone</div>
-                        <div class="info-value">+94 71 987 6543</div>
-                    </div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon">📅</div>
-                    <div class="info-content">
-                        <div class="info-label">Class Day</div>
-                        <div class="info-value">Sunday</div>
-                    </div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon">⏰</div>
-                    <div class="info-content">
-                        <div class="info-label">Time</div>
-                        <div class="info-value">2:30 PM - 4:30 PM</div>
-                    </div>
-                </div>
-                <div class="description">
-                    Institute B offers a state-of-the-art computer lab for Grade 6 students. Our practical-first approach ensures every student gets hands-on experience with modern tools.
-                </div>
-            </div>
-        </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </section>
 
     <!-- Dilhara Section -->
@@ -532,11 +525,11 @@
             <div class="footer-section">
                 <h4>Classes</h4>
                 <ul class="footer-links">
-                    <li><a href="grade6_details.php">Grade 6 ICT</a></li>
-                    <li><a href="#">Grade 7 ICT</a></li>
-                    <li><a href="#">Grade 8 ICT</a></li>
-                    <li><a href="#">Grade 9 ICT</a></li>
-                    <li><a href="#">O/L ICT</a></li>
+                    <li><a href="class_details.php?grade=6">Grade 6 ICT</a></li>
+                    <li><a href="class_details.php?grade=7">Grade 7 ICT</a></li>
+                    <li><a href="class_details.php?grade=8">Grade 8 ICT</a></li>
+                    <li><a href="class_details.php?grade=9">Grade 9 ICT</a></li>
+                    <li><a href="class_details.php?grade=10">O/L ICT</a></li>
                 </ul>
             </div>
             <div class="footer-section">

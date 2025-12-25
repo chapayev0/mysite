@@ -977,37 +977,37 @@
                 <div class="class-icon">📚</div>
                 <h3 class="class-title">Grade 6 ICT</h3>
                 <p class="class-description">Introduction to computers, basic operations, and digital literacy fundamentals for young learners.</p>
-                <a href="grade6_details.php" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
+                <a href="class_details.php?grade=6" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">💻</div>
                 <h3 class="class-title">Grade 7 ICT</h3>
                 <p class="class-description">Building on basics with office applications, internet safety, and essential software skills.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="class_details.php?grade=7" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">🖥️</div>
                 <h3 class="class-title">Grade 8 ICT</h3>
                 <p class="class-description">Intermediate concepts including programming basics, databases, and digital communication.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="class_details.php?grade=8" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">⚡</div>
                 <h3 class="class-title">Grade 9 ICT</h3>
                 <p class="class-description">Advanced topics with focus on web development, algorithms, and computational thinking.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="class_details.php?grade=9" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">🎓</div>
                 <h3 class="class-title">Grade 10 ICT</h3>
                 <p class="class-description">Comprehensive O/L preparation covering all syllabus areas with exam-focused practice.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="class_details.php?grade=10" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">🚀</div>
                 <h3 class="class-title">Grade 11 ICT</h3>
                 <p class="class-description">Advanced Level foundation with programming, systems analysis, and project work.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="class_details.php?grade=11" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
         </div>
     </section>
