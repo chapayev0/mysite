@@ -158,17 +158,7 @@ if (!$product) {
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">TechLearn Admin</div>
-        <nav>
-            <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
-            <a href="add_student.php" class="nav-link">Add Student</a>
-            <a href="admin_classes.php" class="nav-link">Classes</a>
-            <a href="admin_products.php" class="nav-link active">Store</a>
-            <a href="admin_add_resource.php" class="nav-link">Add Resource</a>
-            <a href="logout.php" class="nav-link">Logout</a>
-        </nav>
-    </div>
+    <?php include 'admin_sidebar.php'; ?>
     
     <div class="main-content">
         <div style="margin-bottom: 2rem;">
