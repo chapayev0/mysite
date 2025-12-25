@@ -1033,12 +1033,12 @@
             <div class="contact-tile">
                 <div class="contact-icon">📞</div>
                 <div class="contact-label">Call Us</div>
-                <div class="contact-value">+94 77 123 4567</div>
+                <div class="contact-value">0777 695 130</div>
             </div>
             <div class="contact-tile">
                 <div class="contact-icon">💬</div>
                 <div class="contact-label">WhatsApp</div>
-                <div class="contact-value">+94 77 123 4567</div>
+                <div class="contact-value">0777 695 130</div>
             </div>
             <div class="contact-tile">
                 <div class="contact-icon">📧</div>
