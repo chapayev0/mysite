@@ -117,7 +117,7 @@ function isActive($page) {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const logoutLinks = document.querySelectorAll('a[href="logout.php"]');
+        const logoutLinks = document.querySelectorAll('a[href="logout.php"]:not(.btn-confirm)');
         logoutLinks.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
