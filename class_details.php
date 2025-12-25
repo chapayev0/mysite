@@ -412,21 +412,8 @@ $stmt->close();
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">TechLearn</div>
-            <ul class="nav-links">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="index.php#classes">Classes</a></li>
-                <li><a href="index.php#online">Online Classes</a></li>
-                <li><a href="index.php#store">Store</a></li>
-            </ul>
-            <div class="nav-buttons">
-                <a href="login.php" class="btn btn-outline">Login</a>
-                <button class="btn btn-primary">Register</button>
-            </div>
-        </div>
-    </nav>
+    <!-- Navbar -->
+    <?php include 'navbar.php'; ?>
 
     <!-- Page Header -->
     <header class="page-header">
@@ -488,62 +475,9 @@ $stmt->close();
     </section>
 
     <!-- Dilhara Section -->
-    <section class="dilhara-section">
-        <div class="particle" style="top: 15%; right: 20%;"></div>
-        <div class="particle" style="top: 25%; right: 15%; animation-delay: 0.5s;"></div>
-        <div class="particle" style="top: 35%; right: 25%; animation-delay: 1s;"></div>
-        <div class="particle" style="top: 20%; right: 30%; animation-delay: 1.5s;"></div>
-        
-        <div class="dilhara-text">
-            <div class="small-text">ICT with</div>
-            <div class="large-text">Dilhara</div>
-        </div>
-    </section>
+    <?php include 'ict_section.php'; ?>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <h3>TechLearn</h3>
-                <p>Sri Lanka's leading ICT education academy, committed to nurturing digital excellence and empowering students to excel in technology.</p>
-                <div class="social-links">
-                    <a href="#" class="social-link">📘</a>
-                    <a href="#" class="social-link">📺</a>
-                    <a href="#" class="social-link">💬</a>
-                    <a href="#" class="social-link">📷</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul class="footer-links">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="index.php#classes">Classes</a></li>
-                    <li><a href="index.php#online">Online Classes</a></li>
-                    <li><a href="index.php#store">Store</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Classes</h4>
-                <ul class="footer-links">
-                    <li><a href="class_details.php?grade=6">Grade 6 ICT</a></li>
-                    <li><a href="class_details.php?grade=7">Grade 7 ICT</a></li>
-                    <li><a href="class_details.php?grade=8">Grade 8 ICT</a></li>
-                    <li><a href="class_details.php?grade=9">Grade 9 ICT</a></li>
-                    <li><a href="class_details.php?grade=10">O/L ICT</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Contact Us</h4>
-                <ul class="footer-links">
-                    <li>📍 123, Galle Road, Colombo 03</li>
-                    <li>📞 +94 77 123 4567</li>
-                    <li>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e881868e87a89c8d8b80848d899a86c68483">[email&#160;protected]</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 TechLearn ICT Academy. All rights reserved. | Designed with passion for education</p>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 </body>
 </html>

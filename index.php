@@ -918,22 +918,8 @@
 </head>
 <body>
     <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">TechLearn</div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#classes">Classes</a></li>
-                <li><a href="#online">Online Classes</a></li>
-                <li><a href="#store">Store</a></li>
-                <li><a href="about.php">About</a></li>
-            </ul>
-            <div class="nav-buttons">
-                <a href="login.php" class="btn btn-outline">Login</a>
-                <button class="btn btn-primary">Register</button>
-            </div>
-        </div>
-    </nav>
+    <!-- Navigation Header -->
+    <?php include 'navbar.php'; ?>
 
     <!-- Hero Section with Slider -->
     <section class="hero-section" id="home">
