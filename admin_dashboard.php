@@ -82,11 +82,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <div class="sidebar">
         <div class="logo">TechLearn Admin</div>
         <nav>
-            <a href="admin_dashboard.php" class="nav-link active">Dashboard</a>
-            <a href="add_student.php" class="nav-link">Add Student</a>
+            <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
+            <a href="admin_students.php" class="nav-link">Students</a>
             <a href="admin_classes.php" class="nav-link">Classes</a>
             <a href="admin_products.php" class="nav-link">Store</a>
-            <a href="admin_add_resource.php" class="nav-link">Add Resource</a>
+            <a href="admin_resources.php" class="nav-link">Resources</a>
             <a href="logout.php" class="nav-link">Logout</a>
         </nav>
     </div>
