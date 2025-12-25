@@ -1072,54 +1072,31 @@
         </div>
         <div class="store-carousel">
             <div class="products-wrapper" id="productsWrapper">
+                <?php
+                $products_sql = "SELECT * FROM store_products ORDER BY created_at ASC";
+                $products_res = $conn->query($products_sql);
+                
+                if ($products_res->num_rows > 0) {
+                    while ($product = $products_res->fetch_assoc()) {
+                ?>
                 <div class="product-card">
-                    <div class="product-image">📖</div>
+                    <div class="product-image"><?php echo htmlspecialchars($product['image_url']); ?></div>
                     <div class="product-info">
-                        <h3 class="product-name">Complete O/L ICT Guide</h3>
-                        <p class="product-description">Comprehensive textbook covering entire O/L ICT syllabus with practice questions</p>
-                        <div class="product-price">Rs. 1,500</div>
+                        <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
+                        <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
+                        <div class="product-price">Rs. <?php echo number_format($product['price'], 0); ?></div>
                         <div class="product-actions">
                             <button class="btn-cart">Buy Now</button>
                             <button class="btn-cart secondary">Add to Cart</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-card">
-                    <div class="product-image">📝</div>
-                    <div class="product-info">
-                        <h3 class="product-name">Past Paper Collection</h3>
-                        <p class="product-description">10 years of O/L ICT past papers with marking schemes and solutions</p>
-                        <div class="product-price">Rs. 800</div>
-                        <div class="product-actions">
-                            <button class="btn-cart">Buy Now</button>
-                            <button class="btn-cart secondary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">💿</div>
-                    <div class="product-info">
-                        <h3 class="product-name">Video Lesson Pack</h3>
-                        <p class="product-description">50+ hours of recorded lessons covering all topics with practical examples</p>
-                        <div class="product-price">Rs. 2,500</div>
-                        <div class="product-actions">
-                            <button class="btn-cart">Buy Now</button>
-                            <button class="btn-cart secondary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">🎯</div>
-                    <div class="product-info">
-                        <h3 class="product-name">Revision Notes Bundle</h3>
-                        <p class="product-description">Concise notes and mind maps for quick revision before examinations</p>
-                        <div class="product-price">Rs. 600</div>
-                        <div class="product-actions">
-                            <button class="btn-cart">Buy Now</button>
-                            <button class="btn-cart secondary">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
+                <?php 
+                    }
+                } else {
+                    echo '<p style="text-align:center; padding: 2rem;">No products available at the moment.</p>';
+                }
+                ?>
             </div>
         </div>
         <div class="carousel-nav">
