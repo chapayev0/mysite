@@ -977,7 +977,7 @@
                 <div class="class-icon">📚</div>
                 <h3 class="class-title">Grade 6 ICT</h3>
                 <p class="class-description">Introduction to computers, basic operations, and digital literacy fundamentals for young learners.</p>
-                <button class="class-btn">Learn More</button>
+                <a href="grade6_details.php" class="class-btn" style="text-decoration: none; display: inline-block; text-align: center;">Learn More</a>
             </div>
             <div class="class-card">
                 <div class="class-icon">💻</div>
