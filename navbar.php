@@ -1,7 +1,9 @@
 <?php $current_page = basename($_SERVER['PHP_SELF']); ?>
     <nav class="navbar">
         <div class="navbar-container">
-            <div class="logo">TechLearn</div>
+            <div class="logo">
+                <img src="assest/logo/logo1.png" alt="TechLearn Logo" style="height: 50px;">
+            </div>
             <ul class="nav-links">
                 <li><a href="index.php#home">Home</a></li>
                 <li><a href="index.php#classes">Classes</a></li>

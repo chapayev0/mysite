@@ -401,19 +401,56 @@
             }
         }
 
-        .institute-logo {
-            min-width: 180px;
-            height: 100px;
+        .institute-card {
+            min-width: 320px;
             background: var(--light);
             border-radius: 12px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--dark);
+            padding: 1rem;
+            gap: 1rem;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            text-align: left;
+            transition: transform 0.3s ease;
+        }
+
+        .institute-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .institute-logo-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        .institute-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .institute-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .institute-location {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-weight: 500;
         }
 
         /* Online Classes Section */
@@ -1003,22 +1040,72 @@
     <section class="institutes-section" id="institutes">
         <div class="section-header">
             <h2 class="section-title">Partner Institutes</h2>
-            <p class="section-subtitle" style="color: var(--gray);">Trusted by leading educational institutions across Sri Lanka</p>
+            <p class="section-subtitle" style="color: var(--gray);">Leading educational institutions across Sri Lanka</p>
         </div>
         <div class="logo-slider">
             <div class="logo-track">
-                <div class="institute-logo">Royal College</div>
-                <div class="institute-logo">Ananda College</div>
-                <div class="institute-logo">Visakha Vidyalaya</div>
-                <div class="institute-logo">St. Joseph's College</div>
-                <div class="institute-logo">Musaeus College</div>
-                <div class="institute-logo">Nalanda College</div>
-                <div class="institute-logo">Gateway College</div>
-                <div class="institute-logo">Royal College</div>
-                <div class="institute-logo">Ananda College</div>
-                <div class="institute-logo">Visakha Vidyalaya</div>
-                <div class="institute-logo">St. Joseph's College</div>
-                <div class="institute-logo">Musaeus College</div>
+                <!-- Set 1 -->
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/simple_acadamy.png" alt="Simple Acadamy" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Simple Acadamy</div>
+                        <div class="institute-location">Tunkama</div>
+                    </div>
+                </div>
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/panhida.PNG" alt="Panhida Education" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Panhida Education Institute</div>
+                        <div class="institute-location">Embilipitiya</div>
+                    </div>
+                </div>
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/orionlab.png" alt="Orionlab" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Orionlab</div>
+                        <div class="institute-location">www.orionlab.lk</div>
+                    </div>
+                </div>
+
+                    
+
+                <!-- Set 2 (Duplicate for smooth scrolling) -->
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/simple_acadamy.png" alt="Simple Acadamy" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Simple Acadamy</div>
+                        <div class="institute-location">Tunkama</div>
+                    </div>
+                </div>
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/panhida.PNG" alt="Panhida Education" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Panhida Education Institute</div>
+                        <div class="institute-location">Embilipitiya</div>
+                    </div>
+                </div>
+                <div class="institute-card">
+                    <div class="institute-logo-box">
+                        <img src="assest/logo/orionlab.png" alt="Orionlab" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                    </div>
+                    <div class="institute-details">
+                        <div class="institute-name">Orionlab</div>
+                        <div class="institute-location">www.orionlab.lk</div>
+                    </div>
+                </div>
+                
+                
+                
             </div>
         </div>
     </section>
@@ -1033,17 +1120,17 @@
             <div class="contact-tile">
                 <div class="contact-icon">📞</div>
                 <div class="contact-label">Call Us</div>
-                <div class="contact-value">0777 695 130</div>
+                <div class="contact-value"><a href="tel:0777695130">0777 695 130</a></div>
             </div>
             <div class="contact-tile">
                 <div class="contact-icon">💬</div>
                 <div class="contact-label">WhatsApp</div>
-                <div class="contact-value">0777 695 130</div>
+                <div class="contact-value"><a href="https://wa.me/0777695130">0777 695 130</a></div>
             </div>
             <div class="contact-tile">
                 <div class="contact-icon">📧</div>
                 <div class="contact-label">Email</div>
-                <div class="contact-value"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e881868e87a89c8d8b80848d899a86c68483">[email&#160;protected]</a></div>
+                <div class="contact-value"><a href="mailto:sdilhara544@gmail.com">sdilhara544@gmail.com</a></div>
             </div>
         </div>
         <div style="text-align: center;">
@@ -1067,11 +1154,15 @@
                     while ($product = $products_res->fetch_assoc()) {
                 ?>
                 <div class="product-card">
-                    <div class="product-image"><?php echo htmlspecialchars($product['image_url']); ?></div>
-                    <div class="product-info">
-                        <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
-                        <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
-                        <div class="product-price">Rs. <?php echo number_format($product['price'], 0); ?></div>
+                    <a href="product_details.php?id=<?php echo $product['id']; ?>" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="product-image"><?php echo htmlspecialchars($product['image_url']); ?></div>
+                        <div class="product-info">
+                            <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
+                            <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
+                            <div class="product-price">Rs. <?php echo number_format($product['price'], 0); ?></div>
+                        </div>
+                    </a>
+                    <div class="product-info" style="padding-top: 0;">
                         <div class="product-actions">
                             <button class="btn-cart">Buy Now</button>
                             <button class="btn-cart secondary">Add to Cart</button>

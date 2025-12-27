@@ -377,7 +377,7 @@
                 <h2>Shashika Dilhara</h2>
                 <h4>Lead Instructor & Founder</h4>
                 <p class="bio-text">
-                    With over 10 years of experience in ICT education, I am passionate about simplifying complex technology concepts for students. 
+                    With over 6 years of experience in ICT education, I am passionate about simplifying complex technology concepts for students. 
                     My mission is to provide high-quality, practical, and exam-focused ICT education to help students achieve excellence.
                 </p>
                 
