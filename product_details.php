@@ -20,6 +20,24 @@ if (!$product) {
     header("Location: index.php#store");
     exit;
 }
+
+// Get all images
+$images = [];
+$img_sql = "SELECT * FROM product_images WHERE product_id = $product_id ORDER BY is_primary DESC, id ASC";
+$img_res = $conn->query($img_sql);
+if ($img_res->num_rows > 0) {
+    while ($row = $img_res->fetch_assoc()) {
+        $images[] = $row['image_url'];
+    }
+} else {
+    // If no images in new table, check old column just in case or use placeholder
+    if (!empty($product['image_url'])) {
+        $images[] = $product['image_url'];
+    } else {
+        $images[] = '📦';
+    }
+}
+$main_image = $images[0]; // First one is primary or first added
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,6 +101,34 @@ if (!$product) {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-thumbnails {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .thumbnail {
+            width: 60px;
+            height: 60px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .thumbnail.active {
+            border-color: var(--primary);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .product-info-large h1 {
@@ -170,13 +216,95 @@ if (!$product) {
         </div>
         
         <div class="product-container">
-            <div class="product-image-large">
-                <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
-                    <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                <?php else: ?>
-                    <?php echo htmlspecialchars($product['image_url']); ?>
+            <div class="product-gallery-container">
+                <div class="product-image-large" id="mainImageContainer">
+                    <?php if (filter_var($main_image, FILTER_VALIDATE_URL) || file_exists($main_image) || strpos($main_image, 'assest/') === 0): ?>
+                        <img src="<?php echo htmlspecialchars($main_image); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" id="mainImage">
+                    <?php else: ?>
+                        <span id="mainEmoji" style="font-size: 5rem;"><?php echo htmlspecialchars($main_image); ?></span>
+                    <?php endif; ?>
+                </div>
+                
+                <?php if (count($images) > 1): ?>
+                <div class="product-thumbnails">
+                    <?php foreach ($images as $index => $img): ?>
+                        <div class="thumbnail <?php echo $index === 0 ? 'active' : ''; ?>" onclick="changeImage('<?php echo htmlspecialchars($img); ?>', this)">
+                            <?php if (filter_var($img, FILTER_VALIDATE_URL) || file_exists($img) || strpos($img, 'assest/') === 0): ?>
+                                <img src="<?php echo htmlspecialchars($img); ?>" alt="Thumbnail">
+                            <?php else: ?>
+                                <span style="font-size: 2rem; display: flex; align-items: center; justify-content: center; height: 100%;"><?php echo htmlspecialchars($img); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
                 <?php endif; ?>
             </div>
+
+<script>
+    let autoRotateInterval;
+    const images = <?php echo json_encode($images); ?>;
+    let currentIndex = 0;
+
+    function changeImage(src, thumbnail) {
+        // Update Main Image
+        const mainContainer = document.getElementById('mainImageContainer');
+        const mainImage = document.getElementById('mainImage');
+        const mainEmoji = document.getElementById('mainEmoji');
+
+        // Check if src is image or emoji/text
+        const isImage = (src.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) || src.startsWith('http') || src.startsWith('assest/');
+
+        if (isImage) {
+            if (mainImage) {
+                mainImage.style.opacity = 0;
+                setTimeout(() => {
+                    mainImage.src = src;
+                    mainImage.style.opacity = 1;
+                }, 200);
+            } else {
+                // If it was emoji before, we might need to recreate img tag structure but for simplicity assuming consistent types
+                 mainContainer.innerHTML = `<img src="${src}" id="mainImage" style="width:100%; height:100%; object-fit:contain; transition: opacity 0.3s ease;">`;
+            }
+        } else {
+             mainContainer.innerHTML = `<span id="mainEmoji" style="font-size: 5rem;">${src}</span>`;
+        }
+
+        // Update Thumbnails
+        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+        if (thumbnail) {
+            thumbnail.classList.add('active');
+            // Find index of this thumbnail
+            const thumbs = Array.from(document.querySelectorAll('.thumbnail'));
+            currentIndex = thumbs.indexOf(thumbnail);
+        }
+
+        // Reset Timer on manual click
+        stopAutoRotate();
+        startAutoRotate();
+    }
+
+    function startAutoRotate() {
+        if (images.length <= 1) return;
+        
+        autoRotateInterval = setInterval(() => {
+            currentIndex = (currentIndex + 1) % images.length;
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            if (thumbnails[currentIndex]) {
+                const img = images[currentIndex];
+                changeImage(img, thumbnails[currentIndex]);
+            }
+        }, 3000); // Change every 3 seconds
+    }
+
+    function stopAutoRotate() {
+        clearInterval(autoRotateInterval);
+    }
+
+    // Start on load
+    document.addEventListener('DOMContentLoaded', () => {
+        startAutoRotate();
+    });
+</script>
             <div class="product-info-large">
                 <h1><?php echo htmlspecialchars($product['name']); ?></h1>
                 <div class="product-price-large">Rs. <?php echo number_format($product['price'], 0); ?></div>

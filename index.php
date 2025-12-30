@@ -1154,19 +1154,26 @@
         <div class="store-carousel">
             <div class="products-wrapper" id="productsWrapper">
                 <?php
-                $products_sql = "SELECT * FROM store_products ORDER BY created_at ASC";
+                // Fetch products with their primary image
+                $products_sql = "SELECT p.*, 
+                                (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image,
+                                (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id ASC LIMIT 1) as fallback_image
+                                FROM store_products p 
+                                ORDER BY p.created_at ASC";
                 $products_res = $conn->query($products_sql);
                 
                 if ($products_res->num_rows > 0) {
                     while ($product = $products_res->fetch_assoc()) {
+                        // Use primary image, otherwise fallback (e.g. first added), otherwise placeholder
+                        $display_image = $product['primary_image'] ?: $product['fallback_image'] ?: '📦';
                 ?>
                 <div class="product-card">
                     <a href="product_details.php?id=<?php echo $product['id']; ?>" style="text-decoration: none; color: inherit; display: block;">
                         <div class="product-image">
-                            <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
-                                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            <?php if (filter_var($display_image, FILTER_VALIDATE_URL) || file_exists($display_image) || strpos($display_image, 'assest/') === 0): ?>
+                                <img src="<?php echo htmlspecialchars($display_image); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             <?php else: ?>
-                                <?php echo htmlspecialchars($product['image_url']); ?>
+                                <?php echo htmlspecialchars($display_image); ?>
                             <?php endif; ?>
                         </div>
                         <div class="product-info">

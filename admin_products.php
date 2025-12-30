@@ -17,51 +17,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $description = $_POST['description'];
     $price = $_POST['price'];
 
-    // Handle Image
-    $image_url = '';
-    
-    // Check for file upload first
-    if (isset($_FILES['image_upload']) && $_FILES['image_upload']['error'] === UPLOAD_ERR_OK) {
+    // Insert Product first to get ID
+    $stmt = $conn->prepare("INSERT INTO store_products (name, description, price) VALUES (?, ?, ?)");
+    $stmt->bind_param("ssd", $name, $description, $price);
+
+    if ($stmt->execute()) {
+        $product_id = $stmt->insert_id;
+        $success_msg = "Product added successfully! ";
+        
+        // Handle Images
         $upload_dir = 'assest/images/products/';
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
         
-        $file_ext = strtolower(pathinfo($_FILES['image_upload']['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $image_urls = [];
         
-        if (in_array($file_ext, $allowed_exts)) {
-            $new_filename = uniqid('product_') . '.' . $file_ext;
-            $upload_path = $upload_dir . $new_filename;
-            
-            if (move_uploaded_file($_FILES['image_upload']['tmp_name'], $upload_path)) {
-                $image_url = $upload_path;
-            } else {
-                $error_msg = "Failed to upload image.";
+        // 1. Handle File Uploads (Multiple)
+        if (isset($_FILES['image_upload'])) {
+            $total_files = count($_FILES['image_upload']['name']);
+            for ($i = 0; $i < $total_files; $i++) {
+                if ($_FILES['image_upload']['error'][$i] === UPLOAD_ERR_OK) {
+                    $file_ext = strtolower(pathinfo($_FILES['image_upload']['name'][$i], PATHINFO_EXTENSION));
+                    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                    
+                    if (in_array($file_ext, $allowed)) {
+                        $new_filename = uniqid('product_') . '_' . $i . '.' . $file_ext;
+                        $path = $upload_dir . $new_filename;
+                        if (move_uploaded_file($_FILES['image_upload']['tmp_name'][$i], $path)) {
+                            $image_urls[] = $path;
+                        }
+                    }
+                }
             }
-        } else {
-            $error_msg = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
         }
-    } 
-    // If no file, check for URL
-    elseif (!empty($_POST['image_url'])) {
-        $image_url = $_POST['image_url'];
-    }
-
-    if (empty($error_msg)) {
-        // Fallback or empty if nothing provided
-        if (empty($image_url)) $image_url = '📦'; // Default emoji if nothing
-
-        $stmt = $conn->prepare("INSERT INTO store_products (name, description, price, image_url) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssds", $name, $description, $price, $image_url);
-
-        if ($stmt->execute()) {
-            $success_msg = "Product added successfully!";
-        } else {
-            $error_msg = "Error adding product: " . $conn->error;
+        
+        // 2. Handle Text URLs (Split by new line or comma)
+        if (!empty($_POST['image_urls_text'])) {
+            $urls = preg_split('/[\r\n,]+/', $_POST['image_urls_text']);
+            foreach ($urls as $url) {
+                $url = trim($url);
+                if (!empty($url)) {
+                    $image_urls[] = $url;
+                }
+            }
         }
-        $stmt->close();
+        
+        // Insert images into DB
+        if (!empty($image_urls)) {
+            $stmt_img = $conn->prepare("INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, ?)");
+            foreach ($image_urls as $index => $url) {
+                $is_primary = ($index === 0) ? 1 : 0;
+                $stmt_img->bind_param("isi", $product_id, $url, $is_primary);
+                $stmt_img->execute();
+            }
+            $stmt_img->close();
+            $success_msg .= count($image_urls) . " images uploaded.";
+        } else {
+            // Default placeholder if none
+            $default_img = '📦'; 
+            $conn->query("INSERT INTO product_images (product_id, image_url, is_primary) VALUES ($product_id, '$default_img', 1)");
+        }
+
+    } else {
+        $error_msg = "Error adding product: " . $conn->error;
     }
+    $stmt->close();
 }
 
 // Handle Delete Product
@@ -77,11 +98,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
     $stmt->close();
 }
 
-// Fetch all products
+// Fetch all products with primary image
 $products = [];
-$result = $conn->query("SELECT * FROM store_products ORDER BY created_at DESC");
+$sql = "SELECT p.*, 
+        (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image 
+        FROM store_products p 
+        ORDER BY p.created_at DESC";
+$result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        // Fallback if no primary image found but records exist (shouldn't happen with migration but safe)
+        if (empty($row['primary_image'])) {
+            $img_res = $conn->query("SELECT image_url FROM product_images WHERE product_id = " . $row['id'] . " LIMIT 1");
+            if ($img_row = $img_res->fetch_assoc()) {
+                $row['primary_image'] = $img_row['image_url'];
+            } else {
+                 $row['primary_image'] = '📦';
+            }
+        }
         $products[] = $row;
     }
 }
@@ -297,10 +331,12 @@ if ($result) {
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 1rem;">
                                                 <div style="width: 50px; height: 50px; background: #eee; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
-                                                    <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
-                                                        <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="Img" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    <?php 
+                                                    $img = $product['primary_image'];
+                                                    if (filter_var($img, FILTER_VALIDATE_URL) || file_exists($img) || strpos($img, 'assest/') === 0): ?>
+                                                        <img src="<?php echo htmlspecialchars($img); ?>" alt="Img" style="width: 100%; height: 100%; object-fit: cover;">
                                                     <?php else: ?>
-                                                        <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($product['image_url']); ?></span>
+                                                        <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($img); ?></span>
                                                     <?php endif; ?>
                                                 </div>
                                                 <div style="font-weight: 600;"><?php echo htmlspecialchars($product['name']); ?></div>
@@ -342,15 +378,18 @@ if ($result) {
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Product Image</label>
-                            <div style="margin-bottom: 0.5rem;">
-                                <input type="text" name="image_url" class="form-control" placeholder="Image URL (e.g. https://placehold.co/200)">
+                            <label class="form-label">Product Images (Max 5)</label>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="font-size: 0.9rem; color: var(--gray);">Upload Files:</label>
+                                <input type="file" name="image_upload[]" class="form-control" accept="image/*" multiple>
+                                <small style="color: var(--gray);">You can select multiple files.</small>
                             </div>
-                            <div style="text-align: center; margin: 0.5rem 0; color: var(--gray); font-size: 0.9rem; font-weight: bold;">- OR -</div>
+                            
                             <div>
-                                <input type="file" name="image_upload" class="form-control" accept="image/*">
+                                <label style="font-size: 0.9rem; color: var(--gray);">Or Image URLs (one per line):</label>
+                                <textarea name="image_urls_text" class="form-control" rows="3" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"></textarea>
                             </div>
-                            <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Upload an image or paste a link.</small>
                         </div>
                         
                         <div class="form-group">
