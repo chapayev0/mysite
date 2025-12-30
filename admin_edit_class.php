@@ -28,18 +28,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_class'])) {
     $start_time = $_POST['start_time'];
     $end_time = $_POST['end_time'];
     $description = $_POST['description'];
-    $logo_emoji = $_POST['logo_emoji'];
-
-    $stmt = $conn->prepare("UPDATE classes SET grade=?, institute_name=?, institute_address=?, institute_phone=?, class_day=?, start_time=?, end_time=?, description=?, logo_emoji=? WHERE id=?");
-    $stmt->bind_param("issssssssi", $grade, $institute_name, $institute_address, $institute_phone, $class_day, $start_time, $end_time, $description, $logo_emoji, $class_id);
-
-    if ($stmt->execute()) {
-        $success_msg = "Class updated successfully!";
-        // Refresh data
-    } else {
-        $error_msg = "Error updating class: " . $conn->error;
+    // Handle Logo Update
+    $class_logo = $_POST['current_logo']; // Default to existing
+    
+    // Check for file upload
+    if (isset($_FILES['logo_upload']) && $_FILES['logo_upload']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'assest/images/class_logos/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_ext = strtolower(pathinfo($_FILES['logo_upload']['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($file_ext, $allowed_exts)) {
+            $new_filename = uniqid('class_logo_') . '.' . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($_FILES['logo_upload']['tmp_name'], $upload_path)) {
+                $class_logo = $upload_path;
+            } else {
+                $error_msg = "Failed to upload image.";
+            }
+        } else {
+            $error_msg = "Invalid file type.";
+        }
     }
-    $stmt->close();
+    // Check for URL (only if no file uploaded)
+    elseif (!empty($_POST['logo_url'])) {
+        $class_logo = $_POST['logo_url'];
+    }
+
+    if (empty($error_msg)) {
+        // Keep logo_emoji as separate field if needed, or just keep old value if we removed it from form
+        // Since we removed it from form, let's just keep the old one or set a default.
+        // Actually, let's just use what's in DB or default. 
+        // But the form doesn't send logo_emoji anymore.
+        // So we should fetch the old one or just ignore it.
+        // Let's assume we don't care about updating logo_emoji anymore.
+        // But the SQL needs 10 params.
+        
+        // We'll just set it to '🏫' or keep it if we fetched it? 
+        // We haven't fetched it yet in this block. 
+        // Let's just set it to '🏫' to satisfy the query, or remove it from query.
+        // Removing from query is cleaner.
+        
+        $stmt = $conn->prepare("UPDATE classes SET grade=?, institute_name=?, institute_address=?, institute_phone=?, class_day=?, start_time=?, end_time=?, description=?, class_logo=? WHERE id=?");
+        $stmt->bind_param("issssssssi", $grade, $institute_name, $institute_address, $institute_phone, $class_day, $start_time, $end_time, $description, $class_logo, $class_id);
+
+        if ($stmt->execute()) {
+            $success_msg = "Class updated successfully!";
+        } else {
+            $error_msg = "Error updating class: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 
 // Fetch class data
@@ -179,7 +222,8 @@ if (!$class) {
         <?php endif; ?>
         
         <div class="card">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="current_logo" value="<?php echo htmlspecialchars($class['class_logo']); ?>">
                 <div style="display: flex; gap: 2rem;">
                     <div style="flex: 1;">
                         <div class="form-group">
@@ -236,8 +280,27 @@ if (!$class) {
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Logo Emoji</label>
-                            <input type="text" name="logo_emoji" class="form-control" value="<?php echo htmlspecialchars($class['logo_emoji']); ?>">
+                            <label class="form-label">Institute Logo</label>
+                            
+                            <!-- Current Logo Preview -->
+                            <div style="margin-bottom: 1rem; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; text-align: center;">
+                                <label style="display: block; font-size: 0.8rem; color: var(--gray); margin-bottom: 0.5rem;">Current Logo:</label>
+                                <?php if (!empty($class['class_logo'])): ?>
+                                    <img src="<?php echo htmlspecialchars($class['class_logo']); ?>" alt="Current Logo" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 1px solid #eee;">
+                                <?php else: ?>
+                                    <div style="font-size: 2rem;"><?php echo !empty($class['logo_emoji']) ? htmlspecialchars($class['logo_emoji']) : '🏫'; ?></div>
+                                    <span style="font-size: 0.8rem; color: var(--gray);">(No image set)</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div style="margin-bottom: 0.5rem;">
+                                <input type="text" name="logo_url" class="form-control" placeholder="New Image URL" value="<?php echo (filter_var($class['class_logo'], FILTER_VALIDATE_URL)) ? htmlspecialchars($class['class_logo']) : ''; ?>">
+                            </div>
+                            <div style="text-align: center; margin: 0.5rem 0; color: var(--gray); font-size: 0.9rem; font-weight: bold;">- OR -</div>
+                            <div>
+                                <input type="file" name="logo_upload" class="form-control" accept="image/*">
+                            </div>
+                            <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Upload to replace. Leave both empty to keep current.</small>
                         </div>
 
                         <div class="form-group">

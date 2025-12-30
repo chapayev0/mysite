@@ -210,6 +210,13 @@ $stmt->close();
             font-size: 2.5rem;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            overflow: hidden; /* Ensure image stays within circle */
+        }
+
+        .institute-logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .institute-name {
@@ -431,7 +438,12 @@ $stmt->close();
             <?php foreach ($classes as $class): ?>
                 <div class="institute-card">
                     <div class="card-header">
-                        <div class="institute-logo-placeholder"><?php echo htmlspecialchars($class['logo_emoji']); ?></div>
+                        <div class="institute-logo-placeholder">
+                            <?php 
+                            $logoSrc = !empty($class['class_logo']) ? $class['class_logo'] : 'https://placehold.co/100x100?text=Logo'; 
+                            ?>
+                            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($class['institute_name']); ?> Logo">
+                        </div>
                         <h3 class="institute-name"><?php echo htmlspecialchars($class['institute_name']); ?></h3>
                     </div>
                     <div class="card-body">

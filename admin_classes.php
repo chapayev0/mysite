@@ -21,17 +21,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_class'])) {
     $start_time = $_POST['start_time'];
     $end_time = $_POST['end_time'];
     $description = $_POST['description'];
-    $logo_emoji = $_POST['logo_emoji'];
-
-    $stmt = $conn->prepare("INSERT INTO classes (grade, institute_name, institute_address, institute_phone, class_day, start_time, end_time, description, logo_emoji) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("issssssss", $grade, $institute_name, $institute_address, $institute_phone, $class_day, $start_time, $end_time, $description, $logo_emoji);
-
-    if ($stmt->execute()) {
-        $success_msg = "Class added successfully!";
-    } else {
-        $error_msg = "Error adding class: " . $conn->error;
+    
+    // Handle Logo
+    $class_logo = '';
+    
+    // Check for file upload first
+    if (isset($_FILES['logo_upload']) && $_FILES['logo_upload']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'assest/images/class_logos/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_ext = strtolower(pathinfo($_FILES['logo_upload']['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($file_ext, $allowed_exts)) {
+            $new_filename = uniqid('class_logo_') . '.' . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($_FILES['logo_upload']['tmp_name'], $upload_path)) {
+                $class_logo = $upload_path;
+            } else {
+                $error_msg = "Failed to upload image.";
+            }
+        } else {
+            $error_msg = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
+        }
+    } 
+    // If no file, check for URL
+    elseif (!empty($_POST['logo_url'])) {
+        $class_logo = $_POST['logo_url'];
     }
-    $stmt->close();
+
+    if (empty($error_msg)) {
+        // Use a default emoji if needed for the old column, or just empty
+        $logo_emoji = '🏫'; 
+
+        $stmt = $conn->prepare("INSERT INTO classes (grade, institute_name, institute_address, institute_phone, class_day, start_time, end_time, description, logo_emoji, class_logo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("isssssssss", $grade, $institute_name, $institute_address, $institute_phone, $class_day, $start_time, $end_time, $description, $logo_emoji, $class_logo);
+
+        if ($stmt->execute()) {
+            $success_msg = "Class added successfully!";
+        } else {
+            $error_msg = "Error adding class: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 
 // Handle Delete Class
@@ -268,7 +303,13 @@ if ($result) {
                                         <td>
                                             <span style="font-weight: 700; color: var(--dark);"><?php echo $class['grade']; ?></span>
                                             <br>
-                                            <span style="font-size: 1.2rem;"><?php echo htmlspecialchars($class['logo_emoji']); ?></span>
+                                            <div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                                                <?php if (!empty($class['class_logo'])): ?>
+                                                    <img src="<?php echo htmlspecialchars($class['class_logo']); ?>" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                                                <?php else: ?>
+                                                    <span style="font-size: 1.5rem;"><?php echo !empty($class['logo_emoji']) ? htmlspecialchars($class['logo_emoji']) : '🏫'; ?></span>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <div style="font-weight: 600;"><?php echo htmlspecialchars($class['institute_name']); ?></div>
@@ -300,7 +341,7 @@ if ($result) {
         <!-- Add Class Tab -->
         <div id="add-tab" class="hidden">
             <div class="card">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     <div style="display: flex; gap: 2rem;">
                         <div style="flex: 1;">
                             <div class="form-group">
@@ -358,8 +399,15 @@ if ($result) {
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">Logo Emoji (Placeholder)</label>
-                                <input type="text" name="logo_emoji" class="form-control" placeholder="e.g. 🏫" value="🏫">
+                                <label class="form-label">Institute Logo</label>
+                                <div style="margin-bottom: 0.5rem;">
+                                    <input type="text" name="logo_url" class="form-control" placeholder="Image URL (e.g. https://placehold.co/100)">
+                                </div>
+                                <div style="text-align: center; margin: 0.5rem 0; color: var(--gray); font-size: 0.9rem; font-weight: bold;">- OR -</div>
+                                <div>
+                                    <input type="file" name="logo_upload" class="form-control" accept="image/*">
+                                </div>
+                                <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Upload an image or paste a link. (Preferred size: Square)</small>
                             </div>
 
                             <div class="form-group">
