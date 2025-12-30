@@ -13,6 +13,7 @@ function isActive($page) {
         <a href="admin_classes.php" class="nav-link <?php echo isActive('admin_classes.php'); echo isActive('admin_edit_class.php'); ?>">Classes</a>
         <a href="admin_products.php" class="nav-link <?php echo isActive('admin_products.php'); echo isActive('admin_edit_product.php'); ?>">Store</a>
         <a href="admin_resources.php" class="nav-link <?php echo isActive('admin_resources.php'); echo isActive('admin_edit_resource.php'); ?>">Resources</a>
+        <a href="admin_inbox.php" class="nav-link <?php echo isActive('admin_inbox.php'); ?>">Inbox</a>
         <a href="logout.php" class="logout-link nav-link">Logout</a>
     </nav>
 </div>
