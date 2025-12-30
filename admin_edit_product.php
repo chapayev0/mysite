@@ -23,17 +23,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
-    $image_url = $_POST['image_url'];
 
-    $stmt = $conn->prepare("UPDATE store_products SET name=?, description=?, price=?, image_url=? WHERE id=?");
-    $stmt->bind_param("ssdsi", $name, $description, $price, $image_url, $product_id);
-
-    if ($stmt->execute()) {
-        $success_msg = "Product updated successfully!";
-    } else {
-        $error_msg = "Error updating product: " . $conn->error;
+    // Handle Image
+    $image_url = $_POST['current_image']; // Default to existing
+     
+    // Check for file upload
+    if (isset($_FILES['image_upload']) && $_FILES['image_upload']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'assest/images/products/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_ext = strtolower(pathinfo($_FILES['image_upload']['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($file_ext, $allowed_exts)) {
+            $new_filename = uniqid('product_') . '.' . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($_FILES['image_upload']['tmp_name'], $upload_path)) {
+                $image_url = $upload_path;
+            } else {
+                $error_msg = "Failed to upload image.";
+            }
+        } else {
+            $error_msg = "Invalid file type.";
+        }
     }
-    $stmt->close();
+    // Check for URL (only if no file uploaded)
+    elseif (!empty($_POST['image_url'])) {
+        $image_url = $_POST['image_url'];
+    }
+
+    if (empty($error_msg)) {
+        $stmt = $conn->prepare("UPDATE store_products SET name=?, description=?, price=?, image_url=? WHERE id=?");
+        $stmt->bind_param("ssdsi", $name, $description, $price, $image_url, $product_id);
+
+        if ($stmt->execute()) {
+            $success_msg = "Product updated successfully!";
+            // Update the fetched product data to show new image immediately
+            $product['image_url'] = $image_url;
+            $product['name'] = $name;
+            $product['description'] = $description;
+            $product['price'] = $price;
+        } else {
+            $error_msg = "Error updating product: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 
 // Fetch product data
@@ -173,7 +210,8 @@ if (!$product) {
         <?php endif; ?>
         
         <div class="card">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="current_image" value="<?php echo htmlspecialchars($product['image_url']); ?>">
                 
                 <div class="form-group">
                     <label class="form-label">Product Name</label>
@@ -186,8 +224,30 @@ if (!$product) {
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Image Emoji / URL</label>
-                    <input type="text" name="image_url" class="form-control" value="<?php echo htmlspecialchars($product['image_url']); ?>" required>
+                    <label class="form-label">Product Image</label>
+                    
+                    <!-- Current Image Preview -->
+                    <div style="margin-bottom: 1rem; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; text-align: center;">
+                        <label style="display: block; font-size: 0.8rem; color: var(--gray); margin-bottom: 0.5rem;">Current Image:</label>
+                        <div style="display: flex; justify-content: center;">
+                            <div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
+                                <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
+                                    <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="Current Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <span style="font-size: 3rem;"><?php echo htmlspecialchars($product['image_url']); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 0.5rem;">
+                        <input type="text" name="image_url" class="form-control" placeholder="New Image URL" value="<?php echo (filter_var($product['image_url'], FILTER_VALIDATE_URL)) ? htmlspecialchars($product['image_url']) : ''; ?>">
+                    </div>
+                    <div style="text-align: center; margin: 0.5rem 0; color: var(--gray); font-size: 0.9rem; font-weight: bold;">- OR -</div>
+                    <div>
+                        <input type="file" name="image_upload" class="form-control" accept="image/*">
+                    </div>
+                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Upload to replace. Leave both empty to keep current.</small>
                 </div>
                 
                 <div class="form-group">

@@ -16,17 +16,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
-    $image_url = $_POST['image_url'];
 
-    $stmt = $conn->prepare("INSERT INTO store_products (name, description, price, image_url) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssds", $name, $description, $price, $image_url);
-
-    if ($stmt->execute()) {
-        $success_msg = "Product added successfully!";
-    } else {
-        $error_msg = "Error adding product: " . $conn->error;
+    // Handle Image
+    $image_url = '';
+    
+    // Check for file upload first
+    if (isset($_FILES['image_upload']) && $_FILES['image_upload']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'assest/images/products/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        $file_ext = strtolower(pathinfo($_FILES['image_upload']['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($file_ext, $allowed_exts)) {
+            $new_filename = uniqid('product_') . '.' . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($_FILES['image_upload']['tmp_name'], $upload_path)) {
+                $image_url = $upload_path;
+            } else {
+                $error_msg = "Failed to upload image.";
+            }
+        } else {
+            $error_msg = "Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.";
+        }
+    } 
+    // If no file, check for URL
+    elseif (!empty($_POST['image_url'])) {
+        $image_url = $_POST['image_url'];
     }
-    $stmt->close();
+
+    if (empty($error_msg)) {
+        // Fallback or empty if nothing provided
+        if (empty($image_url)) $image_url = '📦'; // Default emoji if nothing
+
+        $stmt = $conn->prepare("INSERT INTO store_products (name, description, price, image_url) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssds", $name, $description, $price, $image_url);
+
+        if ($stmt->execute()) {
+            $success_msg = "Product added successfully!";
+        } else {
+            $error_msg = "Error adding product: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 
 // Handle Delete Product
@@ -261,7 +296,13 @@ if ($result) {
                                     <tr>
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                                <span style="font-size: 2rem;"><?php echo htmlspecialchars($product['image_url']); ?></span>
+                                                <div style="width: 50px; height: 50px; background: #eee; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                                                    <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
+                                                        <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="Img" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    <?php else: ?>
+                                                        <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($product['image_url']); ?></span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <div style="font-weight: 600;"><?php echo htmlspecialchars($product['name']); ?></div>
                                             </div>
                                         </td>
@@ -288,7 +329,7 @@ if ($result) {
         <!-- Add Product Tab -->
         <div id="add-tab" class="hidden">
             <div class="card">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     <div style="max-width: 600px;">
                         <div class="form-group">
                             <label class="form-label">Product Name</label>
@@ -301,8 +342,15 @@ if ($result) {
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Image Emoji / URL</label>
-                            <input type="text" name="image_url" class="form-control" placeholder="e.g. 📖 or https://..." required>
+                            <label class="form-label">Product Image</label>
+                            <div style="margin-bottom: 0.5rem;">
+                                <input type="text" name="image_url" class="form-control" placeholder="Image URL (e.g. https://placehold.co/200)">
+                            </div>
+                            <div style="text-align: center; margin: 0.5rem 0; color: var(--gray); font-size: 0.9rem; font-weight: bold;">- OR -</div>
+                            <div>
+                                <input type="file" name="image_upload" class="form-control" accept="image/*">
+                            </div>
+                            <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Upload an image or paste a link.</small>
                         </div>
                         
                         <div class="form-group">

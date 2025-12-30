@@ -583,6 +583,13 @@
             justify-content: center;
             font-size: 5rem;
             color: var(--dark);
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .product-info {
@@ -1155,7 +1162,13 @@
                 ?>
                 <div class="product-card">
                     <a href="product_details.php?id=<?php echo $product['id']; ?>" style="text-decoration: none; color: inherit; display: block;">
-                        <div class="product-image"><?php echo htmlspecialchars($product['image_url']); ?></div>
+                        <div class="product-image">
+                            <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
+                                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            <?php else: ?>
+                                <?php echo htmlspecialchars($product['image_url']); ?>
+                            <?php endif; ?>
+                        </div>
                         <div class="product-info">
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>

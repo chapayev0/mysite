@@ -76,6 +76,13 @@ if (!$product) {
             color: var(--dark);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .product-image-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .product-info-large h1 {
@@ -164,7 +171,11 @@ if (!$product) {
         
         <div class="product-container">
             <div class="product-image-large">
-                <?php echo htmlspecialchars($product['image_url']); ?>
+                <?php if (filter_var($product['image_url'], FILTER_VALIDATE_URL) || file_exists($product['image_url']) || strpos($product['image_url'], 'assest/') === 0): ?>
+                    <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                <?php else: ?>
+                    <?php echo htmlspecialchars($product['image_url']); ?>
+                <?php endif; ?>
             </div>
             <div class="product-info-large">
                 <h1><?php echo htmlspecialchars($product['name']); ?></h1>
