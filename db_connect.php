@@ -1,8 +1,8 @@
 <?php
 $servername = "127.0.0.1";
-$username = "root";
-$password = "";
-$dbname = "school_db";
+$username = "u529770620_Ictdilhara";
+$password = "jH;4DB7ubu@r";
+$dbname = "u529770620_Ictdilhara";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
