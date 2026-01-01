@@ -19,6 +19,7 @@ if (is_dir($classes_dir)) {
         if (is_dir($classes_dir . '/' . $it)) $grades[] = $it;
     }
 }
+array_unshift($grades, 'All');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $grade = $_POST['grade'] ?? '';

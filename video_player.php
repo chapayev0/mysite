@@ -235,11 +235,17 @@ if ($result && $result->num_rows > 0) {
         <div class="video-wrapper">
             <?php if ($video['video_type'] == 'link'): ?>
                 <?php
-                // Attempt to embed if YouTube
+                // Attempt to embed if YouTube or Google Drive
                 $url = $video['filepath'];
                 $embed_url = $url;
+                
+                // YouTube
                 if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/', $url, $matches)) {
                     $embed_url = "https://www.youtube.com/embed/" . $matches[1] . "?rel=0&modestbranding=1";
+                } 
+                // Google Drive
+                elseif (preg_match('/drive\.google\.com\/(?:file\/d\/|open\?id=)([^"&?\/ ]+)/', $url, $matches)) {
+                    $embed_url = "https://drive.google.com/file/d/" . $matches[1] . "/preview";
                 }
                 ?>
                 <iframe src="<?php echo htmlspecialchars($embed_url); ?>" allowfullscreen></iframe>

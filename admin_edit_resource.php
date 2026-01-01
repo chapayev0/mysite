@@ -169,6 +169,7 @@ if (!$resource) {
                 <div class="form-group">
                     <label class="form-label">Grade</label>
                     <select name="grade" class="form-control" required>
+                        <option value="All" <?php if($resource['grade'] == 'All') echo 'selected'; ?>>All Classes</option>
                         <?php for($i=6; $i<=11; $i++): ?>
                             <option value="<?php echo $i; ?>" <?php if($resource['grade'] == $i) echo 'selected'; ?>>Grade <?php echo $i; ?></option>
                         <?php endfor; ?>

@@ -141,7 +141,7 @@ if ($result->num_rows > 0) {
             // Note: If you have old resources stored as 'g6', they won't show unless we search for 'g'.$clean_grade too.
             // I will keep both for safety: '6' and 'g6' to ensure nothing breaks during transition.
             
-            $grade_variants = [$clean_grade, 'g' . $clean_grade];
+            $grade_variants = [$clean_grade, 'g' . $clean_grade, 'All'];
             
             // Create a comma-separated string of placeholders for the IN clause
             $placeholders = implode(',', array_fill(0, count($grade_variants), '?'));
@@ -189,6 +189,7 @@ if ($result->num_rows > 0) {
                         <?php foreach ($resources[$catKey] as $resource): ?>
                             <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; height: 100%;">
                                 <div style="flex: 1;">
+
                                     <span style="background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
                                         Grade <?php echo htmlspecialchars($resource['grade']); ?>
                                     </span>

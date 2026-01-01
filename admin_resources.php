@@ -315,6 +315,7 @@ if ($result) {
                         <label class="form-label">Grade</label>
                         <select name="grade" class="form-control" required>
                             <option value="">Select Grade</option>
+                            <option value="All">All Classes</option>
                             <?php for($i=6; $i<=11; $i++): ?>
                                 <option value="<?php echo $i; ?>">Grade <?php echo $i; ?></option>
                             <?php endfor; ?>
