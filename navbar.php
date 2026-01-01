@@ -13,7 +13,7 @@
             </ul>
             <div class="nav-buttons">
                 <a href="login.php" class="btn btn-outline">Login</a>
-                <button class="btn btn-primary">Register</button>
+                <a href="register.php" class="btn btn-primary" style="text-decoration:none;">Register</a>
             </div>
         </div>
     </nav>
