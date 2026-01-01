@@ -43,11 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $filename = '';
         $filepath = '';
 
-        if ($category === 'video' && $video_type === 'link') {
-            // Handle Video Link
+        if (($category === 'video' && $video_type === 'link') || $category === 'link_library') {
+            // Handle Video Link OR Link Library
             $link = trim($_POST['video_link'] ?? '');
             if (empty($link)) {
-                $message = "Please enter the video link.";
+                $message = "Please enter the link URL.";
             } else {
                 $filename = 'External Link';
                 $filepath = $link;
@@ -159,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="tute">Tute</option>
                             <option value="materials">Materials</option>
                             <option value="video">Video</option>
+                            <option value="link_library">Link Library</option>
                         </select>
                     </div>
                 </div>
@@ -186,10 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label><input type="radio" name="video_source" value="link" onclick="toggleVideoSource()"> External Link (YouTube/URL)</label>
                     </div>
 
-                    <div id="video_link_input" class="hidden">
-                        <label for="video_link">Video URL</label>
-                        <input type="text" id="video_link" name="video_link" placeholder="https://youtube.com/...">
-                    </div>
+
 
                     <div class="checkbox-group">
                         <label>
@@ -198,6 +196,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </label>
                         <small style="color:#64748b; display:block; margin-top:2px;">If unchecked, download button will be hidden.</small>
                     </div>
+                </div>
+
+                <div id="video_link_input" class="hidden" style="margin-bottom:12px">
+                    <label for="video_link">External URL</label>
+                    <input type="text" id="video_link" name="video_link" placeholder="https://youtube.com/...">
                 </div>
 
                 <div id="file_input" style="margin-bottom:12px">
@@ -218,25 +221,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const category = document.getElementById('category').value;
             const videoOptions = document.getElementById('video_options');
             const fileInput = document.getElementById('file_input');
+            const videoLinkInput = document.getElementById('video_link_input');
+            const fileField = document.getElementById('file');
             
+            // Reset visibility
+            videoOptions.classList.add('hidden');
+            videoLinkInput.classList.add('hidden');
+            fileInput.classList.add('hidden');
+            fileField.required = false;
+
             if (category === 'video') {
                 videoOptions.classList.remove('hidden');
-                toggleVideoSource(); // Ensure correct input state
+                toggleVideoSource(); // Determines if file or link input is shown
+            } else if (category === 'link_library') {
+                // Link Library only needs the URL input
+                videoLinkInput.classList.remove('hidden');
+                document.getElementById('video_link').placeholder = "Enter External Link URL";
             } else {
-                videoOptions.classList.add('hidden');
+                // Standard File Upload
                 fileInput.classList.remove('hidden');
-                document.getElementById('file').required = true;
+                fileField.required = true;
             }
         }
 
         function toggleVideoSource() {
+            // Only relevant if category is 'video'
+            if (document.getElementById('category').value !== 'video') return;
+
             const source = document.querySelector('input[name="video_source"]:checked').value;
             const linkInput = document.getElementById('video_link_input');
             const fileInput = document.getElementById('file_input');
             const fileField = document.getElementById('file');
+            const linkField = document.getElementById('video_link');
 
             if (source === 'link') {
                 linkInput.classList.remove('hidden');
+                linkField.placeholder = "https://youtube.com/...";
                 fileInput.classList.add('hidden');
                 fileField.required = false;
             } else {

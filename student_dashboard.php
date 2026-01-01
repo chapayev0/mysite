@@ -45,6 +45,9 @@ if ($result->num_rows > 0) {
             color: white;
             min-height: 100vh;
             padding: 2rem;
+            position: fixed;
+            left: 0;
+            top: 0;
         }
         .logo {
             font-size: 1.5rem;
@@ -66,6 +69,7 @@ if ($result->num_rows > 0) {
         .main-content {
             flex: 1;
             padding: 3rem;
+            margin-left: 290px;
         }
         .card {
             background: white;
@@ -236,7 +240,8 @@ if ($result->num_rows > 0) {
                 </div>
             <?php endif; ?>
         <?php endforeach; ?>
-    </div>
+
+
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="modal-overlay">
         <div class="modal-content">

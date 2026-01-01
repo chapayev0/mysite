@@ -45,6 +45,9 @@ if ($result->num_rows > 0) {
             color: white;
             min-height: 100vh;
             padding: 2rem;
+            position: fixed;
+            left: 0;
+            top: 0;
         }
         .logo {
             font-size: 1.5rem;
@@ -66,6 +69,7 @@ if ($result->num_rows > 0) {
         .main-content {
             flex: 1;
             padding: 3rem;
+            margin-left: 290px;
         }
         .card {
             background: white;
@@ -113,14 +117,7 @@ if ($result->num_rows > 0) {
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">Student Dashboard</div>
-        <nav>
-            <a href="student_dashboard.php" class="nav-link">Dashboard</a>
-            <a href="student_profile.php" class="nav-link active">Profile</a>
-            <a href="logout.php" class="nav-link">Logout</a>
-        </nav>
-    </div>
+    <?php include 'student_sidebar.php'; ?>
     <div class="main-content">
         <div class="card" style="margin-bottom: 2rem;">
             <?php if(isset($student)): ?>

@@ -184,6 +184,7 @@ if (!$resource) {
                         <option value="tute" <?php if($resource['category'] == 'tute') echo 'selected'; ?>>Tute</option>
                         <option value="materials" <?php if($resource['category'] == 'materials') echo 'selected'; ?>>Materials</option>
                         <option value="video" <?php if($resource['category'] == 'video') echo 'selected'; ?>>Video</option>
+                        <option value="link_library" <?php if($resource['category'] == 'link_library') echo 'selected'; ?>>Link Library</option>
                     </select>
                 </div>
                 
