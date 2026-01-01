@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechLearn ICT Academy | Excellence in Digital Education</title>
+    <title>ICT with Dilhara ICT Academy | Excellence in Digital Education</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1212,7 +1212,7 @@
         <div class="testimonials-grid">
             <div class="testimonial-card">
                 <div class="quote-icon">"</div>
-                <p class="testimonial-text">TechLearn Academy transformed my understanding of ICT. The teachers are amazing and the materials are comprehensive. I scored an A in my O/Levels!</p>
+                <p class="testimonial-text">ICT with Dilhara Academy transformed my understanding of ICT. The teachers are amazing and the materials are comprehensive. I scored an A in my O/Levels!</p>
                 <div class="testimonial-author">
                     <div class="author-avatar">AS</div>
                     <div class="author-info">

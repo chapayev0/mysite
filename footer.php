@@ -2,7 +2,7 @@
         <div class="footer-content">
             <div class="footer-brand">
             <div >
-                <img src="assest/logo/logo1.png" alt="TechLearn Logo" style="height: 70px;">
+                <img src="assest/logo/logo1.png" alt="ICT with Dilhara Logo" style="height: 70px;">
             </div>
                 <p>Sri Lanka's leading ICT education academy, committed to nurturing digital excellence and empowering students to excel in technology.</p>
                 <div class="social-links">

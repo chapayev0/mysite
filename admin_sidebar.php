@@ -6,7 +6,7 @@ function isActive($page) {
 }
 ?>
 <div class="sidebar">
-    <div class="logo">TechLearn Admin</div>
+    <div class="logo">Admin Dashboard</div>
     <nav>
         <a href="admin_dashboard.php" class="nav-link <?php echo isActive('admin_dashboard.php'); ?>">Dashboard</a>
         <a href="admin_students.php" class="nav-link <?php echo isActive('admin_students.php'); echo isActive('admin_edit_student.php'); ?>">Students</a>

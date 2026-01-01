@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Student | TechLearn Admin</title>
+    <title>Add Student | ICT with Dilhara Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -234,7 +234,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">TechLearn Admin</div>
+        <div class="logo">Admin Dashboard</div>
         <nav>
             <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
             <a href="add_student.php" class="nav-link active">Add Student</a>

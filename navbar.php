@@ -2,7 +2,7 @@
     <nav class="navbar">
         <div class="navbar-container">
             <div class="logo">
-                <img src="assest/logo/logo1.png" alt="TechLearn Logo" style="height: 50px;">
+                <img src="assest/logo/logo1.png" alt="ICT with Dilhara Logo" style="height: 50px;">
             </div>
             <ul class="nav-links">
                 <li><a href="index.php#home">Home</a></li>

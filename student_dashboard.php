@@ -23,7 +23,7 @@ if ($result->num_rows > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | TechLearn</title>
+    <title>Student Dashboard | ICT with Dilhara</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -114,7 +114,7 @@ if ($result->num_rows > 0) {
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">TechLearn Student</div>
+        <div class="logo">Student Dashboard</div>
         <nav>
             <a href="student_dashboard.php" class="nav-link active">Dashboard</a>
             <a href="student_profile.php" class="nav-link">Profile</a>

@@ -44,7 +44,7 @@ $main_image = $images[0]; // First one is primary or first added
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($product['name']); ?> - TechLearn Academy</title>
+    <title><?php echo htmlspecialchars($product['name']); ?> - ICT with Dilhara Academy</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
