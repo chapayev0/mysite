@@ -71,6 +71,20 @@ if ($result->num_rows > 0) {
             padding: 3rem;
             margin-left: 290px;
         }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+                padding-top: 5rem;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr; /* Stack columns */
+            }
+            .section-header {
+                grid-column: span 1; /* Match single column */
+            }
+        }
         .card {
             background: white;
             padding: 2.5rem;

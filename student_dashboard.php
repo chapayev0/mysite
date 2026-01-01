@@ -71,6 +71,14 @@ if ($result->num_rows > 0) {
             padding: 3rem;
             margin-left: 290px;
         }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+                padding-top: 5rem; /* Space for toggle */
+            }
+        }
         .card {
             background: white;
             padding: 2.5rem;
