@@ -72,6 +72,23 @@ if ($result->num_rows > 0) {
             top: 0;
         }
         /* ... existing sidebar styles ... */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            color: var(--primary);
+        }
+        .nav-link {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 1rem 0;
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            font-weight: 600;
+        }
         .main-content {
             flex: 1;
             padding: 3rem;
@@ -91,36 +108,6 @@ if ($result->num_rows > 0) {
             margin-top: 0;
         }
         
-        /* Modal Styles */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .modal-actions {
-            display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;
-        }
-        .btn-cancel, .btn-confirm {
-            padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;
-        }
-        .btn-cancel { background: #e2e8f0; color: #64748B; }
-        .btn-confirm { background: var(--primary); color: white; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -174,17 +161,7 @@ if ($result->num_rows > 0) {
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div id="logoutModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Confirm Logout</h3>
-            <p style="color: var(--gray); margin-bottom: 2rem;">Are you sure you want to log out?</p>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
-                <a href="logout.php" class="btn-confirm">Logout</a>
-            </div>
-        </div>
-    </div>
+
 
     <script>
         function copyToClipboard(text) {

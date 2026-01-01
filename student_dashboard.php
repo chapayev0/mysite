@@ -117,14 +117,7 @@ if ($result->num_rows > 0) {
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">Student Dashboard</div>
-        <nav>
-            <a href="student_dashboard.php" class="nav-link active">Dashboard</a>
-            <a href="student_profile.php" class="nav-link">Profile</a>
-            <a href="logout.php" class="nav-link">Logout</a>
-        </nav>
-    </div>
+    <?php include 'student_sidebar.php'; ?>
     <div class="main-content">
         <h1 style="color: var(--dark); margin-bottom: 2rem;">Welcome, <?php echo htmlspecialchars($student['first_name']); ?>!</h1>
 
@@ -242,17 +235,7 @@ if ($result->num_rows > 0) {
         <?php endforeach; ?>
 
 
-    <!-- Logout Confirmation Modal -->
-    <div id="logoutModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Confirm Logout</h3>
-            <p>Are you sure you want to log out?</p>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
-                <a href="logout.php" class="btn-confirm">Logout</a>
-            </div>
-        </div>
-    </div>
+
 
     <style>
         .modal-overlay {
@@ -340,27 +323,6 @@ if ($result->num_rows > 0) {
         }
     </style>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const logoutLinks = document.querySelectorAll('a[href="logout.php"]:not(.btn-confirm)');
-            logoutLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('logoutModal').style.display = 'flex';
-                });
-            });
-        });
 
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
-        
-        // Close on outside click
-        document.getElementById('logoutModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLogoutModal();
-            }
-        });
-    </script>
 </body>
 </html>
