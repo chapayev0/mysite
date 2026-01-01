@@ -47,6 +47,11 @@
 </div>
 
 <style>
+    /* Global Reset for Sidebar Context */
+    * {
+        box-sizing: border-box;
+    }
+    
     /* Mobile Toggle */
     .mobile-toggle {
         display: none;
