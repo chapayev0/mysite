@@ -14,7 +14,6 @@ $result = $conn->query($sql);
 if ($result->num_rows > 0) {
     $student = $result->fetch_assoc();
 } else {
-    // Should ideally not happen if data integrity is maintained
     $error = "Student profile not found. Please contact admin.";
 }
 ?>
@@ -39,46 +38,24 @@ if ($result->num_rows > 0) {
             margin: 0;
             display: flex;
         }
-        .sidebar {
-            width: 250px;
-            background: var(--dark);
-            color: white;
-            min-height: 100vh;
-            padding: 2rem;
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 3rem;
-            color: var(--primary);
-        }
-        .nav-link {
-            display: block;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            padding: 1rem 0;
-            transition: color 0.3s;
-        }
-        .nav-link:hover, .nav-link.active {
-            color: white;
-            font-weight: 600;
-        }
+        /* Sidebar styles are now in student_sidebar.php */
+
         .main-content {
             flex: 1;
             padding: 3rem;
-            margin-left: 290px;
+            margin-left: 250px; /* Matched sidebar width */
+            transition: margin-left 0.3s ease;
         }
 
+        /* Responsive handled by sidebar css mostly, but ensuring main content adapts */
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 padding: 1.5rem;
-                padding-top: 5rem; /* Space for toggle */
+                padding-top: 5rem;
             }
         }
+        
         .card {
             background: white;
             padding: 2.5rem;
@@ -98,6 +75,19 @@ if ($result->num_rows > 0) {
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
         }
+        /* Responsive Profile Grid */
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-header {
+                grid-column: span 1;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+
         .profile-item {
             margin-bottom: 1rem;
         }
@@ -122,6 +112,35 @@ if ($result->num_rows > 0) {
             margin-top: 1rem;
             font-size: 1.2rem;
         }
+        
+        /* Load More Styles */
+        .resource-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 2rem;
+        }
+        
+        .hidden-item {
+            display: none !important;
+        }
+        
+        .load-more-btn {
+            display: block;
+            width: fit-content;
+            margin: 2rem auto 0;
+            padding: 0.8rem 2rem;
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .load-more-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -130,25 +149,12 @@ if ($result->num_rows > 0) {
         <h1 style="color: var(--dark); margin-bottom: 2rem;">Welcome, <?php echo htmlspecialchars($student['first_name']); ?>!</h1>
 
         <?php
-        // Fetch resources for the student's grade
         $student_grade = $student['grade'] ?? '';
         $resources = [];
         if ($student_grade) {
-            // New system: Grade is just a number (e.g. '6')
-            // We search for this specific grade in the resources table.
-            // If the database still has old 'g6' entries, we might miss them unless we include them.
-            // But user said "renamed g6 to 6", implying the structure is updated.
-            // Let's stick to the student's grade value, but ensure we strip 'g' if it exists in the student's profile just in case.
-            
             $clean_grade = str_replace('g', '', strtolower($student_grade));
-            
-            // We search for the clean grade (e.g. '6')
-            // Note: If you have old resources stored as 'g6', they won't show unless we search for 'g'.$clean_grade too.
-            // I will keep both for safety: '6' and 'g6' to ensure nothing breaks during transition.
-            
             $grade_variants = [$clean_grade, 'g' . $clean_grade, 'All'];
             
-            // Create a comma-separated string of placeholders for the IN clause
             $placeholders = implode(',', array_fill(0, count($grade_variants), '?'));
             $types = str_repeat('s', count($grade_variants));
             
@@ -188,11 +194,11 @@ if ($result->num_rows > 0) {
         <?php foreach ($categories as $catKey => $catName): ?>
             <?php if (!empty($resources[$catKey])): ?>
                 <!-- Section Container for <?php echo $catName; ?> -->
-                <div style="margin-bottom: 4rem; display: flow-root; border-bottom: 1px solid transparent;">
+                <div class="resource-section" style="margin-bottom: 4rem; display: flow-root; border-bottom: 1px solid transparent;">
                     <h2 style="color: var(--dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 2rem;"><?php echo $catName; ?></h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+                    <div class="resource-grid" data-category="<?php echo $catKey; ?>">
                         <?php foreach ($resources[$catKey] as $resource): ?>
-                            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; height: 100%;">
+                            <div class="card resource-card" style="padding: 1.5rem; display: flex; flex-direction: column; height: 100%;">
                                 <div style="flex: 1;">
 
                                     <span style="background: var(--secondary); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
@@ -203,7 +209,6 @@ if ($result->num_rows > 0) {
                                             <span style="font-size: 0.9rem; color: var(--primary); display: block; margin-bottom: 0.2rem;">
                                                 <?php 
                                                     $ln = $resource['lesson_number'];
-                                                    // Add 'Lesson ' prefix for theory cards if not already present
                                                     if ($catKey === 'theory' && stripos($ln, 'Lesson') === false) {
                                                         $ln = 'Lesson ' . $ln;
                                                     }
@@ -238,99 +243,55 @@ if ($result->num_rows > 0) {
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    <!-- Load More Button Placeholder -->
                 </div>
             <?php endif; ?>
         <?php endforeach; ?>
 
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ITEMS_PER_PAGE = 6;
+            const sections = document.querySelectorAll('.resource-section');
 
+            sections.forEach(section => {
+                const grid = section.querySelector('.resource-grid');
+                const cards = grid.querySelectorAll('.resource-card');
+                
+                if (cards.length > ITEMS_PER_PAGE) {
+                    // Hide items beyond limit
+                    cards.forEach((card, index) => {
+                        if (index >= ITEMS_PER_PAGE) {
+                            card.classList.add('hidden-item');
+                        }
+                    });
 
-    <style>
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.2s ease-out;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transform: translateY(20px);
-            animation: slideUp 0.3s ease-out forwards;
-        }
-        
-        .modal-content h3 {
-            margin-top: 0;
-            color: #0F172A;
-            font-size: 1.5rem;
-        }
-        
-        .modal-content p {
-            color: #64748B;
-            margin-bottom: 2rem;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-        
-        .btn-cancel, .btn-confirm {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-        
-        .btn-cancel {
-            background: #F1F5F9;
-            color: #64748B;
-        }
-        
-        .btn-cancel:hover {
-            background: #E2E8F0;
-            color: #475569;
-        }
-        
-        .btn-confirm {
-            background: #EF4444;
-            color: white;
-        }
-        
-        .btn-confirm:hover {
-            background: #DC2626;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-
-
+                    // Create Load More button
+                    const btn = document.createElement('button');
+                    btn.innerText = 'Load More';
+                    btn.className = 'load-more-btn';
+                    
+                    btn.addEventListener('click', function() {
+                        const hidden = grid.querySelectorAll('.hidden-item');
+                        let count = 0;
+                        hidden.forEach(item => {
+                            if (count < ITEMS_PER_PAGE) {
+                                item.classList.remove('hidden-item');
+                                count++;
+                            }
+                        });
+                        
+                        // Hide button if no more hidden items
+                        if (grid.querySelectorAll('.hidden-item').length === 0) {
+                            btn.style.display = 'none';
+                        }
+                    });
+                    
+                    section.appendChild(btn);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

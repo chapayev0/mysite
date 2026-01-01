@@ -1,5 +1,14 @@
-<div class="sidebar">
-    <div class="logo">Student Dashboard</div>
+<div class="mobile-toggle" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">Student Dashboard</div>
+        <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+    </div>
     <nav>
         <a href="student_dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'student_dashboard.php' ? 'active' : ''; ?>">Dashboard</a>
         <a href="link_library.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'link_library.php' ? 'active' : ''; ?>">Link Library</a>
@@ -8,8 +17,14 @@
     </nav>
 </div>
 
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
     function openLogoutModal() {
         document.getElementById('logoutModal').style.display = 'flex';
     }
@@ -32,6 +47,129 @@
 </div>
 
 <style>
+    /* Mobile Toggle */
+    .mobile-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: #0066FF;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        flex-direction: column;
+        gap: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .mobile-toggle span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 2px;
+    }
+
+    /* Sidebar Header & Close Button */
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0066FF; /* Ensure consistent color */
+    }
+    
+    .close-sidebar {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    /* Sidebar Base Styles */
+    .sidebar {
+        width: 250px;
+        background: #0F172A;
+        color: white;
+        min-height: 100vh;
+        padding: 2rem;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+    }
+    
+    .nav-link {
+        display: block;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        padding: 1rem 0;
+        transition: color 0.3s;
+    }
+    .nav-link:hover, .nav-link.active {
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Responsive Media Query */
+    @media (max-width: 768px) {
+        .mobile-toggle {
+            display: flex;
+        }
+
+        .sidebar {
+            transform: translateX(-100%);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .close-sidebar {
+            display: block;
+        }
+        
+        .sidebar-header .logo {
+            margin-bottom: 0;
+        }
+        
+        /* Force main content adjustment globally */
+        body .main-content {
+            margin-left: 0 !important;
+            padding: 1.5rem !important;
+            padding-top: 5rem !important; /* Space for toggle */
+        }
+    }
+
+    /* Logout Modal Styles */
     .modal-overlay {
         display: none;
         position: fixed;

@@ -5,8 +5,17 @@ function isActive($page) {
     return ($current_page === $page) ? 'active' : '';
 }
 ?>
-<div class="sidebar">
-    <div class="logo">Admin Dashboard</div>
+<div class="mobile-toggle" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">Admin Dashboard</div>
+        <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+    </div>
     <nav>
         <a href="admin_dashboard.php" class="nav-link <?php echo isActive('admin_dashboard.php'); ?>">Dashboard</a>
         <a href="admin_students.php" class="nav-link <?php echo isActive('admin_students.php'); echo isActive('admin_edit_student.php'); ?>">Students</a>
@@ -15,9 +24,11 @@ function isActive($page) {
         <a href="admin_resources.php" class="nav-link <?php echo isActive('admin_resources.php'); echo isActive('admin_edit_resource.php'); ?>">Resources</a>
         <a href="admin_requests.php" class="nav-link <?php echo isActive('admin_requests.php'); ?>">Requests</a>
         <a href="admin_inbox.php" class="nav-link <?php echo isActive('admin_inbox.php'); ?>">Inbox</a>
-        <a href="logout.php" class="logout-link nav-link">Logout</a>
+        <a href="#" class="nav-link" onclick="openLogoutModal()">Logout</a>
     </nav>
 </div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <!-- Logout Confirmation Modal -->
 <div id="logoutModal" class="modal-overlay">
@@ -31,7 +42,152 @@ function isActive($page) {
     </div>
 </div>
 
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function openLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'flex';
+    }
+
+    function closeLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'none';
+    }
+    
+    // Close on outside click for modal
+    document.getElementById('logoutModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLogoutModal();
+        }
+    });
+</script>
+
 <style>
+    /* Mobile Toggle */
+    .mobile-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: #0066FF;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        flex-direction: column;
+        gap: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .mobile-toggle span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 2px;
+    }
+
+    /* Sidebar Header & Close Button */
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0066FF;
+    }
+
+    .close-sidebar {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    /* Sidebar Base Styles */
+    .sidebar {
+        width: 250px;
+        background: #0F172A;
+        color: white;
+        min-height: 100vh;
+        padding: 2rem;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+    
+    .nav-link {
+        display: block;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        padding: 1rem 0;
+        transition: color 0.3s;
+    }
+    .nav-link:hover, .nav-link.active {
+        color: white;
+        font-weight: 600;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+    }
+
+    /* Responsive Media Query */
+    @media (max-width: 768px) {
+        .mobile-toggle {
+            display: flex;
+        }
+
+        .sidebar {
+            transform: translateX(-100%);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .close-sidebar {
+            display: block;
+        }
+        
+        .sidebar-header .logo {
+            margin-bottom: 0;
+        }
+        
+        /* Force main content adjustment globally */
+        body .main-content {
+            margin-left: 0 !important;
+            padding: 1.5rem !important;
+            padding-top: 5rem !important; /* Space for toggle */
+        }
+    }
+    
+    /* Modal Styles */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -116,26 +272,3 @@ function isActive($page) {
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const logoutLinks = document.querySelectorAll('a[href="logout.php"]:not(.btn-confirm)');
-        logoutLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('logoutModal').style.display = 'flex';
-            });
-        });
-    });
-
-    function closeLogoutModal() {
-        document.getElementById('logoutModal').style.display = 'none';
-    }
-    
-    // Close on outside click
-    document.getElementById('logoutModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeLogoutModal();
-        }
-    });
-</script>

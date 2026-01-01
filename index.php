@@ -919,11 +919,24 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .classes-grid,
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
+            .contact-tiles {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Content Stacking */
             .slide-title {
                 font-size: 2.5rem;
             }
@@ -945,9 +958,13 @@
             .footer-content {
                 grid-template-columns: 1fr;
             }
+            
+            .navbar-container {
+                padding: 1rem;
+            }
 
             .product-card {
-                min-width: 300px;
+                min-width: 280px;
             }
 
             .dilhara-text .small-text {
@@ -956,6 +973,19 @@
 
             .dilhara-text .large-text {
                 font-size: 30vw;
+            }
+            
+            .hero-section {
+                height: auto;
+                min-height: 90vh;
+            }
+            
+            .slide-content {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                padding-top: 150px;
             }
         }
     </style>
