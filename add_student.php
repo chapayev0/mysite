@@ -53,7 +53,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($email_valid) {
-            $sql_user = "INSERT INTO users (username, email, password, role) VALUES ('$temp_username', '$email', '$hashed_password', 'student')";
+            // Prepare email value for SQL insertion
+            $email_sql_value = !empty($email) ? "'$email'" : "NULL";
+            
+            $sql_user = "INSERT INTO users (username, email, password, role) VALUES ('$temp_username', $email_sql_value, '$hashed_password', 'student')";
             
             if ($conn->query($sql_user) === TRUE) {
                 $user_id = $conn->insert_id;

@@ -70,7 +70,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_student'])) {
             $conn->begin_transaction();
             try {
                 // Create User
-                $conn->query("INSERT INTO users (username, email, password, role) VALUES ('$temp_username', '$email', '$hashed_password', 'student')");
+                $email_sql_value = !empty($email) ? "'$email'" : "NULL";
+                $conn->query("INSERT INTO users (username, email, password, role) VALUES ('$temp_username', $email_sql_value, '$hashed_password', 'student')");
                 $user_id = $conn->insert_id;
                 
                 // Generate Username
