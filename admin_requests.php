@@ -96,7 +96,14 @@ if ($result) {
     <style>
         :root { --primary: #0066FF; --secondary: #7C3AED; --dark: #0F172A; --light: #F8FAFC; --gray: #64748B; --danger: #EF4444; --success: #10B981; }
         body { font-family: 'Outfit', sans-serif; background: var(--light); margin: 0; display: flex; }
-        .main-content { flex: 1; padding: 3rem; margin-left: 250px; }
+        /* Sidebar Styles - Required as admin_sidebar.php doesn't include them */
+        .sidebar { width: 250px; background: var(--dark); color: white; min-height: 100vh; padding: 2rem; position: fixed; left: 0; top: 0; }
+        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 3rem; color: var(--primary); }
+        .nav-link { display: block; color: rgba(255,255,255,0.7); text-decoration: none; padding: 1rem 0; transition: color 0.3s; }
+        .nav-link:hover, .nav-link.active { color: white; font-weight: 600; }
+
+        /* Fixed margin to 290px to match other pages */
+        .main-content { flex: 1; padding: 3rem; margin-left: 290px; }
         .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .alert { padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-weight: 600; }
         .alert-success { background: #D1FAE5; color: #065F46; }
@@ -104,10 +111,52 @@ if ($result) {
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #e2e8f0; }
         th { color: var(--gray); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; }
-        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; margin-right: 0.5rem; }
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; margin-right: 0.5rem; text-decoration: none; display: inline-block;}
+        .btn-view { background: #3B82F6; }
         .btn-approve { background: var(--success); }
         .btn-reject { background: var(--danger); }
         .badge { background: #e0f2fe; color: #0284c7; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.8rem; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 2rem;
+            border: 1px solid #888;
+            border-radius: 15px;
+            width: 90%; 
+            max-width: 600px;
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .detail-row { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
+        .detail-label { font-weight: 600; color: var(--gray); }
+        .detail-value { color: var(--dark); font-weight: 500; }
+        .modal-actions { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
     </style>
 </head>
 <body>
@@ -156,11 +205,11 @@ if ($result) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <form method="POST" style="display:flex;">
-                                        <input type="hidden" name="request_id" value="<?php echo $req['id']; ?>">
-                                        <button type="submit" name="approve_request" class="btn btn-approve">Approve</button>
-                                        <button type="submit" name="reject_request" class="btn btn-reject" onclick="return confirm('Reject this request?');">Reject</button>
-                                    </form>
+                                    <!-- Store data in attributes for modal -->
+                                    <button class="btn btn-view" 
+                                        onclick='openModal(<?php echo htmlspecialchars(json_encode($req), ENT_QUOTES, "UTF-8"); ?>)'>
+                                        View
+                                    </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -169,5 +218,72 @@ if ($result) {
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Details Modal -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-top:0; color:var(--primary);">Request Details</h2>
+            
+            <div id="modalDetails">
+                <!-- Javascript will populate this -->
+            </div>
+
+            <div class="modal-actions">
+                <form method="POST" style="display:flex; gap:1rem;">
+                    <input type="hidden" name="request_id" id="modalRequestId">
+                    <button type="submit" name="reject_request" class="btn btn-reject" onclick="return confirm('Reject this request?');">Reject</button>
+                    <button type="submit" name="approve_request" class="btn btn-approve">Approve</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById("requestModal");
+        const modalDetails = document.getElementById("modalDetails");
+        const modalRequestId = document.getElementById("modalRequestId");
+
+        function openModal(data) {
+            let html = '';
+            const fields = {
+                'Full Name': data.first_name + ' ' + data.last_name,
+                'Grade': data.grade,
+                'Date of Birth': data.dob,
+                'Gender': data.gender,
+                'Address': data.address,
+                'Phone': data.phone,
+                'Email': data.email || 'N/A',
+                'Parent Name': data.parent_name,
+                'Parent Contact': data.parent_contact,
+                'Relationship': data.relationship,
+                'Status': data.status,
+                'Request Date': data.created_at
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                html += `
+                    <div class="detail-row">
+                        <div class="detail-label">${key}</div>
+                        <div class="detail-value">${value}</div>
+                    </div>
+                `;
+            }
+
+            modalDetails.innerHTML = html;
+            modalRequestId.value = data.id;
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -161,7 +161,8 @@ if ($result->num_rows > 0) {
         $categories = [
             'theory' => 'Theory',
             'tute' => 'Tutes',
-            'paper' => 'Papers'
+            'paper' => 'Papers',
+            'video' => 'Videos'
         ];
         
         $hasResources = false;
@@ -206,16 +207,28 @@ if ($result->num_rows > 0) {
                                         <?php endif; ?>
                                         <?php echo htmlspecialchars($resource['title']); ?>
                                     </h3>
-                                    <?php if (!empty($resource['description'])): ?>
-                                        <p style="color: var(--gray); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; word-wrap: break-word; overflow-wrap: break-word;">
-                                            <?php echo htmlspecialchars($resource['description']); ?>
-                                        </p>
-                                    <?php endif; ?>
+
                                 </div>
-                                <a href="<?php echo htmlspecialchars($resource['filepath']); ?>" target="_blank" 
-                                   style="display: inline-block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; margin-top: auto; transition: background 0.2s;">
-                                    Open
-                                </a>
+                                
+                                <?php if ($catKey === 'video'): ?>
+                                    <div style="margin-top:auto; display:flex; gap:10px;">
+                                        <a href="video_player.php?id=<?php echo $resource['id']; ?>" target="_blank" 
+                                           style="flex:1; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 0.8rem; border-radius: 8px; font-weight: 600; transition: background 0.2s;">
+                                            Play
+                                        </a>
+                                        <?php if ($resource['allow_download'] && $resource['video_type'] === 'file'): ?>
+                                            <a href="<?php echo htmlspecialchars($resource['filepath']); ?>" download
+                                               style="flex:1; text-align: center; background: #ea580c; color: white; text-decoration: none; padding: 0.8rem; border-radius: 8px; font-weight: 600; transition: background 0.2s;">
+                                                Download
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <a href="<?php echo htmlspecialchars($resource['filepath']); ?>" target="_blank" 
+                                       style="display: inline-block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; margin-top: auto; transition: background 0.2s;">
+                                        Open
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>

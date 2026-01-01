@@ -50,44 +50,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_resource'])) {
     $description = trim($_POST['description']);
     $lesson_number = $_POST['lesson_number'];
     
-    if (empty($grade) || empty($category) || empty($title) || !isset($_FILES['file'])) {
-        $error_msg = 'Please fill all required fields and choose a file.';
+    // Video specific
+    $video_type = 'none';
+    $allow_download = isset($_POST['allow_download']) ? 1 : 0;
+    
+    if ($category === 'video') {
+        $video_type = $_POST['video_source'] ?? 'file';
+    }
+
+    if (empty($grade) || empty($category) || empty($title)) {
+        $error_msg = 'Please fill all required fields.';
     } else {
-        $file = $_FILES['file'];
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            $error_msg = 'File upload error.';
-        } else {
-            // Destination
-            $dest_dir = __DIR__ . '/classes/' . $grade . '/' . $category;
-            if (!is_dir($dest_dir)) {
-                mkdir($dest_dir, 0755, true);
-            }
-            
-            $safe_name = preg_replace('/[^A-Za-z0-9_\.-]/', '_', basename($file['name']));
-            $target_path = $dest_dir . '/' . $safe_name;
-            
-            // Unique name
-            if (file_exists($target_path)) {
-                $safe_name = time() . '_' . $safe_name;
-                $target_path = $dest_dir . '/' . $safe_name;
-            }
-            
-            if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                $relpath = 'classes/' . $grade . '/' . $category . '/' . $safe_name;
-                
-                $stmt = $conn->prepare("INSERT INTO resources (lesson_number, title, description, filename, filepath, category, grade, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssssssi", $lesson_number, $title, $description, $safe_name, $relpath, $category, $grade, $_SESSION['user_id']);
-                
-                if ($stmt->execute()) {
-                    $success_msg = "Resource uploaded successfully!";
-                } else {
-                    $error_msg = "DB Error: " . $conn->error;
-                    @unlink($target_path);
-                }
-                $stmt->close();
+        $success = false;
+        $filename = '';
+        $filepath = '';
+
+        if ($category === 'video' && $video_type === 'link') {
+            // Handle Video Link
+            $link = trim($_POST['video_link'] ?? '');
+            if (empty($link)) {
+                $error_msg = "Please enter the video link.";
             } else {
-                $error_msg = "Failed to move uploaded file.";
+                $filename = 'External Link';
+                $filepath = $link;
+                $success = true;
             }
+        } else {
+            // Handle File Upload
+            if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+                $error_msg = 'Please choose a file.';
+            } else {
+                $file = $_FILES['file'];
+                // Destination
+                $dest_dir = __DIR__ . '/classes/' . $grade . '/' . $category;
+                if (!is_dir($dest_dir)) {
+                    mkdir($dest_dir, 0755, true);
+                }
+                
+                $safe_name = preg_replace('/[^A-Za-z0-9_\.-]/', '_', basename($file['name']));
+                $target_path = $dest_dir . '/' . $safe_name;
+                
+                // Unique name
+                if (file_exists($target_path)) {
+                    $safe_name = time() . '_' . $safe_name;
+                    $target_path = $dest_dir . '/' . $safe_name;
+                }
+                
+                if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                    $filename = $safe_name;
+                    $filepath = 'classes/' . $grade . '/' . $category . '/' . $safe_name;
+                    $success = true;
+                } else {
+                    $error_msg = "Failed to move uploaded file.";
+                }
+            }
+        }
+
+        if ($success) {
+            $stmt = $conn->prepare("INSERT INTO resources (lesson_number, title, description, filename, filepath, category, grade, uploaded_by, video_type, allow_download) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssssssi", $lesson_number, $title, $description, $filename, $filepath, $category, $grade, $_SESSION['user_id'], $video_type, $allow_download);
+            
+            if ($stmt->execute()) {
+                $success_msg = "Resource uploaded successfully!";
+            } else {
+                $error_msg = "DB Error: " . $conn->error;
+                if ($category !== 'video' || $video_type === 'file') {
+                    @unlink(__DIR__ . '/' . $filepath);
+                }
+            }
+            $stmt->close();
         }
     }
 }
@@ -292,12 +323,13 @@ if ($result) {
                     
                     <div class="form-group">
                         <label class="form-label">Category</label>
-                        <select name="category" class="form-control" required>
+                        <select id="category" name="category" class="form-control" required onchange="toggleFields()">
                             <option value="">Select Category</option>
                             <option value="theory">Theory</option>
                             <option value="paper">Paper</option>
                             <option value="tute">Tute</option>
                             <option value="materials">Materials</option>
+                            <option value="video">Video</option>
                         </select>
                     </div>
                     
@@ -316,9 +348,31 @@ if ($result) {
                         <textarea name="description" class="form-control" rows="3"></textarea>
                     </div>
                     
-                    <div class="form-group">
+                    <!-- Video Specific Fields -->
+                    <div id="video_options" class="hidden" style="margin-bottom:1.5rem; padding:15px; background:#f0f9ff; border-radius:8px;">
+                        <label class="form-label">Video Source</label>
+                        <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                            <label><input type="radio" name="video_source" value="file" checked onclick="toggleVideoSource()"> Upload Video File</label>
+                            <label><input type="radio" name="video_source" value="link" onclick="toggleVideoSource()"> External Link (YouTube/URL)</label>
+                        </div>
+
+                        <div id="video_link_input" class="hidden">
+                            <label class="form-label">Video URL</label>
+                            <input type="text" id="video_link" name="video_link" class="form-control" placeholder="https://youtube.com/...">
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <label>
+                                <input type="checkbox" name="allow_download" value="1" checked>
+                                Allow Download
+                            </label>
+                            <small style="color:#64748b; display:block; margin-top:2px;">If unchecked, download button will be hidden.</small>
+                        </div>
+                    </div>
+
+                    <div id="file_input" class="form-group">
                         <label class="form-label">File</label>
-                        <input type="file" name="file" class="form-control" required>
+                        <input type="file" id="file" name="file" class="form-control">
                     </div>
                     
                     <button type="submit" name="add_resource" class="btn">Upload Resource</button>
@@ -336,6 +390,38 @@ if ($result) {
             const btns = document.querySelectorAll('.tab-btn');
             btns.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+        }
+
+        function toggleFields() {
+            const category = document.getElementById('category').value;
+            const videoOptions = document.getElementById('video_options');
+            const fileInput = document.getElementById('file_input');
+            
+            if (category === 'video') {
+                videoOptions.classList.remove('hidden');
+                toggleVideoSource(); 
+            } else {
+                videoOptions.classList.add('hidden');
+                fileInput.classList.remove('hidden');
+                document.getElementById('file').required = true;
+            }
+        }
+
+        function toggleVideoSource() {
+            const source = document.querySelector('input[name="video_source"]:checked').value;
+            const linkInput = document.getElementById('video_link_input');
+            const fileInput = document.getElementById('file_input');
+            const fileField = document.getElementById('file');
+
+            if (source === 'link') {
+                linkInput.classList.remove('hidden');
+                fileInput.classList.add('hidden');
+                fileField.required = false;
+            } else {
+                linkInput.classList.add('hidden');
+                fileInput.classList.remove('hidden');
+                fileField.required = true;
+            }
         }
     </script>
 </body>
