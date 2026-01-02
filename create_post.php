@@ -28,6 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
             }
         }
 
+        if (!$image_path) {
+            // Auto-detect first image from content
+            preg_match('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $content, $matches);
+            if (isset($matches[1])) {
+                $image_path = $matches[1];
+            }
+        }
+
         $stmt = $conn->prepare("INSERT INTO wall_posts (student_id, title, content, image_path, status) VALUES (?, ?, ?, ?, 'pending')");
         $stmt->bind_param("isss", $student_id, $title, $content, $image_path);
         if ($stmt->execute()) {
@@ -49,7 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Post | Wall of Talent</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Optional for icons -->
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Summernote Lite CSS/JS (No Bootstrap required) -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
     <style>
         :root { --primary: #0066FF; --secondary: #7C3AED; --dark: #0F172A; --light: #F8FAFC; --gray: #64748B; }
         body { font-family: 'Outfit', sans-serif; background: var(--light); margin: 0; display: flex; }
@@ -60,40 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
         .label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); }
         .input-text { width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
         
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            background: #f1f5f9;
-            border-radius: 8px 8px 0 0;
-            border: 1px solid #e2e8f0;
-            flex-wrap: wrap;
-        }
-        .tool-btn {
-            background: white;
-            border: 1px solid #cbd5e1;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .tool-btn:hover { background: #e2e8f0; }
-
-        /* Editor */
-        #editor {
-            min-height: 400px;
-            border: 1px solid #e2e8f0;
-            border-radius: 0 0 8px 8px;
-            padding: 1rem;
-            outline: none;
-            overflow-y: auto;
-            border-top: none;
-        }
-        #editor img { max-width: 100%; height: auto; display: block; margin: 1rem 0; }
-
         .btn-publish {
             background: var(--primary);
             color: white;
@@ -107,6 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
             width: 100%;
         }
         .btn-publish:hover { opacity: 0.9; }
+
+        @media (max-width: 768px) { .main-content { margin-left: 0; padding: 1.5rem; padding-top: 5rem; } }
+        
+        /* Summernote Overrides to match theme */
+        .note-editor.note-frame { border: 2px solid #e2e8f0; border-radius: 8px; box-shadow: none; }
+        .note-toolbar { border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 8px 8px 0 0; }
+        .note-statusbar { border-radius: 0 0 8px 8px; }
     </style>
 </head>
 <body>
@@ -125,29 +113,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
                 <div class="form-group">
                     <label class="label">Featured Image (Thumbnail)</label>
                     <input type="file" name="featured_image" class="input-text" accept="image/*">
-                    <small style="color: var(--gray);">This image will be shown on the Wall card.</small>
+                    <small style="color: var(--gray);">This image will be shown on the Wall card. If left empty, the first image in your content will be used.</small>
                 </div>
 
                 <div class="form-group">
                     <label class="label">Content</label>
-                    
-                    <div class="toolbar">
-                        <button type="button" class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
-                        <button type="button" class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
-                        <button type="button" class="tool-btn" onclick="execCmd('justifyLeft')">Left</button>
-                        <button type="button" class="tool-btn" onclick="execCmd('justifyCenter')">Center</button>
-                        <button type="button" class="tool-btn" onclick="execCmd('justifyRight')">Right</button>
-                        <select class="tool-btn" onchange="execCmd('fontSize', this.value)">
-                            <option value="3">Normal</option>
-                            <option value="5">Large</option>
-                            <option value="7">Huge</option>
-                        </select>
-                        <button type="button" class="tool-btn" onclick="triggerImageUpload()">Insert Image</button>
-                    </div>
-
-                    <div id="editor" contenteditable="true"></div>
-                    <textarea name="content" id="hiddenContent" style="display:none;"></textarea>
-                    <input type="file" id="imageInput" style="display: none;" accept="image/*" onchange="uploadImage(this)">
+                    <textarea id="summernote" name="content"></textarea>
                 </div>
 
                 <button type="submit" name="publish" class="btn-publish">Publish Post</button>
@@ -156,42 +127,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
     </div>
 
     <script>
-        function execCmd(command, value = null) {
-            document.execCommand(command, false, value);
-        }
-
-        function triggerImageUpload() {
-            document.getElementById('imageInput').click();
-        }
-
-        function uploadImage(input) {
-            if (input.files && input.files[0]) {
-                const formData = new FormData();
-                formData.append('file', input.files[0]);
-
-                fetch('upload_image.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.location) {
-                        const imgHtml = `<img src="${data.location}" alt="Uploaded Image">`;
-                        document.execCommand('insertHTML', false, imgHtml);
-                    } else {
-                        alert('Upload failed: ' + (data.error || 'Unknown error'));
+        $(document).ready(function() {
+            $('#summernote').summernote({
+                placeholder: 'Write your story here...',
+                tabsize: 2,
+                height: 400,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        for (let i = 0; i < files.length; i++) {
+                            uploadImage(files[i]);
+                        }
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Upload failed.');
-                });
-            }
-        }
+                }
+            });
+        });
 
-        document.getElementById('postForm').onsubmit = function() {
-            document.getElementById('hiddenContent').value = document.getElementById('editor').innerHTML;
-        };
+        function uploadImage(file) {
+            let data = new FormData();
+            data.append("file", file);
+            $.ajax({
+                data: data,
+                type: "POST",
+                url: "upload_image.php",
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    try {
+                        let res = JSON.parse(response);
+                        if (res.location) {
+                            $('#summernote').summernote('insertImage', res.location);
+                        } else {
+                            alert('Image upload failed: ' + (res.error || 'Unknown error'));
+                        }
+                    } catch (e) {
+                        console.error("Invalid JSON response:", response);
+                        alert('Error uploading image.');
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error(textStatus + " " + errorThrown);
+                    alert('Error uploading image.');
+                }
+            });
+        }
     </script>
 </body>
 </html>
