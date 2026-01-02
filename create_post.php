@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $content = mysqli_real_escape_string($conn, $_POST['content']);
+    $title = stripslashes($_POST['title']);
+    $content = stripslashes($_POST['content']);
     $student_id = $_SESSION['user_id'];
 
     if (!empty($title) && !empty($content)) {
