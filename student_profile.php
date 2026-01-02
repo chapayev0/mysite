@@ -8,6 +8,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 }
 
 $user_id = $_SESSION['user_id'];
+$message = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_password'])) {
+    $current_password = $_POST['current_password'];
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+
+    if ($new_password !== $confirm_password) {
+        $error = "New passwords do not match.";
+    } else {
+        $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows == 1) {
+            $user = $result->fetch_assoc();
+            if (password_verify($current_password, $user['password'])) {
+                $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+                $update_stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $update_stmt->bind_param("si", $new_password_hash, $user_id);
+                
+                if ($update_stmt->execute()) {
+                    $message = "Password updated successfully.";
+                } else {
+                    $error = "Error updating password. Please try again.";
+                }
+                $update_stmt->close();
+            } else {
+                $error = "Incorrect current password.";
+            }
+        }
+        $stmt->close();
+    }
+}
+
 $sql = "SELECT * FROM students WHERE user_id = '$user_id'";
 $result = $conn->query($sql);
 
@@ -128,6 +165,52 @@ if ($result->num_rows > 0) {
             margin-top: 1rem;
             font-size: 1.2rem;
         }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: inherit;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body>
@@ -187,6 +270,32 @@ if ($result->num_rows > 0) {
             <?php else: ?>
                 <p>Profile information unavailable.</p>
             <?php endif; ?>
+        </div>
+
+        <div class="card">
+            <h2>Change Password</h2>
+            <?php if ($message): ?>
+                <div class="alert alert-success"><?php echo $message; ?></div>
+            <?php endif; ?>
+            <?php if ($error && strpos($error, 'profile') === false): ?>
+                <div class="alert alert-error"><?php echo $error; ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                </div>
+                <button type="submit" name="update_password" class="btn-primary">Update Password</button>
+            </form>
         </div>
     </div>
 </body>
