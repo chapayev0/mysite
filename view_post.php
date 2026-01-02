@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'db_connect.php';
+include_once 'helpers.php';
 
 if (!isset($_GET['id'])) {
     header("Location: wall_of_talent.php");
@@ -87,7 +88,7 @@ $post = $result->fetch_assoc();
             </header>
             
             <div class="post-content">
-                <?php echo $post['content']; // Output raw HTML content ?>
+                <?php echo sanitize_html($post['content']); ?>
             </div>
         </div>
     </div>

@@ -1,5 +1,6 @@
 <?php
 include 'db_connect.php';
+include_once 'helpers.php';
 
 if (!isset($_GET['id'])) {
     header("Location: wall.php");
@@ -92,7 +93,7 @@ $post = $result->fetch_assoc();
             <?php endif; ?>
 
             <div class="post-content">
-                <?php echo $post['content']; ?>
+                <?php echo sanitize_html($post['content']); ?>
             </div>
         </article>
     </div>
