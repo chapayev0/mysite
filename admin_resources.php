@@ -44,7 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_resource'])) {
 
 // Handle Add Resource
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_resource'])) {
-    $grade = $_POST['grade'];
+    // Handle Multi-Select Grade
+    $grade_input = $_POST['grade'] ?? [];
+    if (empty($grade_input)) {
+        $grade = '';
+    } elseif (in_array('All', $grade_input)) {
+        $grade = 'All';
+    } else {
+        $grade = implode(',', $grade_input);
+    }
+
     $category = $_POST['category'];
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
@@ -312,14 +321,18 @@ if ($result) {
             <div class="card">
                 <form method="POST" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label class="form-label">Grade</label>
-                        <select name="grade" class="form-control" required>
-                            <option value="">Select Grade</option>
-                            <option value="All">All Classes</option>
+                    <div class="form-group">
+                        <label class="form-label">Grade (Select all that apply)</label>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <label style="cursor:pointer;">
+                                <input type="checkbox" name="grade[]" value="All"> All Classes
+                            </label>
                             <?php for($i=6; $i<=11; $i++): ?>
-                                <option value="<?php echo $i; ?>">Grade <?php echo $i; ?></option>
+                                <label style="cursor:pointer;">
+                                    <input type="checkbox" name="grade[]" value="<?php echo $i; ?>"> Grade <?php echo $i; ?>
+                                </label>
                             <?php endfor; ?>
-                        </select>
+                        </div>
                     </div>
                     
                     <div class="form-group">

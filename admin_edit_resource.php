@@ -24,7 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_resource'])) {
     $description = trim($_POST['description']);
     // Grade and Category changes would require moving files, so we'll keep it simple for now and only allow editing metadata unless a new file is uploaded, or implementing file move logic.
     // Let's implement full move logic for completeness.
-    $new_grade = $_POST['grade'];
+    // Handle Multi-Select Grade
+    $grade_input = $_POST['grade'] ?? [];
+    if (empty($grade_input)) {
+        $new_grade = '';
+    } elseif (in_array('All', $grade_input)) {
+        $new_grade = 'All';
+    } else {
+        $new_grade = implode(',', $grade_input);
+    }
+    
     $new_category = $_POST['category'];
 
     // Get current data
@@ -45,49 +54,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_resource'])) {
     // 2. If NO File Change but Path Change -> Move old file to New Path.
     // 3. Update DB.
 
-    $target_dir = __DIR__ . '/classes/' . $new_grade . '/' . $new_category;
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0755, true);
+    // Normalize path separators
+    $target_dir = str_replace('\\', '/', __DIR__ . '/classes/' . $new_grade . '/' . $new_category);
+    
+    // Ensure directory exists
+    if (!file_exists($target_dir)) {
+        if (!mkdir($target_dir, 0777, true)) {
+            $error_msg = "Failed to create directory: " . $target_dir;
+        }
     }
 
-    if ($file_change) {
-        $file = $_FILES['file'];
-        $safe_name = preg_replace('/[^A-Za-z0-9_\.-]/', '_', basename($file['name']));
-        $target_path = $target_dir . '/' . $safe_name;
-        
-        if (file_exists($target_path)) {
-            $safe_name = time() . '_' . $safe_name;
+    if (empty($error_msg)) {
+        if ($file_change) {
+            $file = $_FILES['file'];
+            $safe_name = preg_replace('/[^A-Za-z0-9_\.-]/', '_', basename($file['name']));
             $target_path = $target_dir . '/' . $safe_name;
-        }
-
-        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-            // Delete old file
-            $old_path = __DIR__ . '/' . $current_res['filepath'];
-            if (file_exists($old_path)) {
-                @unlink($old_path);
+            
+            if (file_exists($target_path)) {
+                $safe_name = time() . '_' . $safe_name;
+                $target_path = $target_dir . '/' . $safe_name;
             }
-            $final_filepath = 'classes/' . $new_grade . '/' . $new_category . '/' . $safe_name;
-            $final_filename = $safe_name;
-        } else {
-            $error_msg = "Failed to upload new file.";
-        }
-    } elseif ($path_change) {
-        // Move existing file
-        $old_full_path = __DIR__ . '/' . $current_res['filepath'];
-        $safe_name = $current_res['filename'];
-        $target_path = $target_dir . '/' . $safe_name;
-        
-        // Handle name collision in new dir
-        if (file_exists($target_path)) {
-            $safe_name = time() . '_' . $safe_name;
-            $target_path = $target_dir . '/' . $safe_name;
-        }
 
-        if (rename($old_full_path, $target_path)) {
-            $final_filepath = 'classes/' . $new_grade . '/' . $new_category . '/' . $safe_name;
-            $final_filename = $safe_name;
-        } else {
-            $error_msg = "Failed to move file to new folder.";
+            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                // Delete old file
+                $old_path = __DIR__ . '/' . $current_res['filepath'];
+                if (file_exists($old_path)) {
+                    @unlink($old_path);
+                }
+                $final_filepath = 'classes/' . $new_grade . '/' . $new_category . '/' . $safe_name;
+                $final_filename = $safe_name;
+            } else {
+                $error_msg = "Failed to upload new file.";
+            }
+        } elseif ($path_change) {
+            // Move existing file
+            $old_full_path = str_replace('\\', '/', __DIR__ . '/' . $current_res['filepath']);
+            
+            if (file_exists($old_full_path)) {
+                $safe_name = $current_res['filename'];
+                $target_path = $target_dir . '/' . $safe_name;
+                
+                // Handle name collision in new dir
+                if (file_exists($target_path)) {
+                    $safe_name = time() . '_' . $safe_name;
+                    $target_path = $target_dir . '/' . $safe_name;
+                }
+
+                if (rename($old_full_path, $target_path)) {
+                    $final_filepath = 'classes/' . $new_grade . '/' . $new_category . '/' . $safe_name;
+                    $final_filename = $safe_name;
+                } else {
+                    $error_msg = "Failed to move file to new folder.";
+                }
+            } else {
+                // Old file missing, but we update DB to new path structure anyway to fix broken record? 
+                // No, safer to warn. Or perhaps just update the metadata but keep filepath? 
+                // If the file is gone, keeping the old path is useless. 
+                // Let's assume user wants to fix the record. We'll verify if they might want to just update DB.
+                // For now, let's treat it as an error but create the folder.
+                $error_msg = "Source file not found: " . $current_res['filepath'];
+            }
         }
     }
 
@@ -167,13 +193,20 @@ if (!$resource) {
             <form method="POST" enctype="multipart/form-data">
                 
                 <div class="form-group">
-                    <label class="form-label">Grade</label>
-                    <select name="grade" class="form-control" required>
-                        <option value="All" <?php if($resource['grade'] == 'All') echo 'selected'; ?>>All Classes</option>
+                    <label class="form-label">Grade (Select all that apply)</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <?php 
+                        $current_grades = explode(',', $resource['grade']); 
+                        ?>
+                        <label style="cursor:pointer;">
+                            <input type="checkbox" name="grade[]" value="All" <?php if(in_array('All', $current_grades)) echo 'checked'; ?>> All Classes
+                        </label>
                         <?php for($i=6; $i<=11; $i++): ?>
-                            <option value="<?php echo $i; ?>" <?php if($resource['grade'] == $i) echo 'selected'; ?>>Grade <?php echo $i; ?></option>
+                            <label style="cursor:pointer;">
+                                <input type="checkbox" name="grade[]" value="<?php echo $i; ?>" <?php if(in_array($i, $current_grades)) echo 'checked'; ?>> Grade <?php echo $i; ?>
+                            </label>
                         <?php endfor; ?>
-                    </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">

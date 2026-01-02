@@ -61,10 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $file = $_FILES['file'];
                 
                 // Ensure destination dir exists: classes/<grade>/<category>
-                $dest_dir = __DIR__ . '/classes/' . $grade . '/' . $category;
-                if (!is_dir($dest_dir)) {
-                    if (!mkdir($dest_dir, 0755, true)) {
-                        $message = 'Failed to create destination directory.';
+                $dest_dir = str_replace('\\', '/', __DIR__ . '/classes/' . $grade . '/' . $category);
+                if (!file_exists($dest_dir)) {
+                    if (!mkdir($dest_dir, 0777, true)) {
+                        $message = 'Failed to create destination directory: ' . $dest_dir;
                     }
                 }
                 

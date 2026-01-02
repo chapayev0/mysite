@@ -152,14 +152,12 @@ if ($result->num_rows > 0) {
         $student_grade = $student['grade'] ?? '';
         $resources = [];
         if ($student_grade) {
-            $clean_grade = str_replace('g', '', strtolower($student_grade));
-            $grade_variants = [$clean_grade, 'g' . $clean_grade, 'All'];
+            // Clean grade: extract just the number (e.g., "Grade 6" -> "6")
+            $clean_grade = preg_replace('/[^0-9]/', '', $student_grade);
             
-            $placeholders = implode(',', array_fill(0, count($grade_variants), '?'));
-            $types = str_repeat('s', count($grade_variants));
-            
-            $stmt = $conn->prepare("SELECT * FROM resources WHERE grade IN ($placeholders) ORDER BY created_at DESC");
-            $stmt->bind_param($types, ...$grade_variants);
+            // Query: Find if student's grade is in the list OR if it's for 'All'
+            $stmt = $conn->prepare("SELECT * FROM resources WHERE FIND_IN_SET(?, grade) > 0 OR grade = 'All' ORDER BY created_at DESC");
+            $stmt->bind_param("s", $clean_grade);
             
             $stmt->execute();
             $res = $stmt->get_result();
