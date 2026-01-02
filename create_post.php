@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'db_connect.php';
+include_once 'helpers.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: login.php");
@@ -8,6 +9,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        die("Security Check Failed: Invalid CSRF Token.");
+    }
+
     $title = stripslashes($_POST['title']);
     $content = stripslashes($_POST['content']);
     $student_id = $_SESSION['user_id'];
@@ -105,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
             <p style="color: var(--gray); margin-bottom: 2rem;">Posts will be reviewed by admin before appearing on the public wall.</p>
             
             <form method="POST" id="postForm" enctype="multipart/form-data">
+                <?php csrf_input(); ?>
                 <div class="form-group">
                     <label class="label">Title</label>
                     <input type="text" name="title" class="input-text" required placeholder="Enter post title...">

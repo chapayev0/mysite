@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'db_connect.php';
+include_once 'helpers.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: login.php");
@@ -11,13 +12,9 @@ $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_password'])) {
-    $current_password = $_POST['current_password'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
-
-    if ($new_password !== $confirm_password) {
-        $error = "New passwords do not match.";
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
+    if (!verify_csrf_token($_POST['csrf_token'])) {
+        $error = "Invalid Security Token.";
     } else {
         $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
         $stmt->bind_param("i", $user_id);
@@ -282,6 +279,7 @@ if ($result->num_rows > 0) {
             <?php endif; ?>
 
             <form method="POST" action="">
+                <?php csrf_input(); ?>
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
                     <input type="password" id="current_password" name="current_password" class="form-control" required>

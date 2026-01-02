@@ -1,10 +1,16 @@
 <?php
 session_start();
 include 'db_connect.php';
+include_once 'helpers.php';
 
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Verify CSRF Token
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        die("Security Check Failed: Invalid CSRF Token.");
+    }
+
     $identifier = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
@@ -17,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result && $result->num_rows == 1) {
         $row = $result->fetch_assoc();
         if (password_verify($password, $row['password'])) {
+            session_regenerate_id(true); // Prevent Session Fixation
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['role'] = $row['role'];
             $_SESSION['email'] = $row['email'];
@@ -154,6 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?php csrf_input(); ?>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" class="form-control" required>

@@ -59,4 +59,41 @@ function sanitize_html($html) {
 
     return $clean_html;
 }
+
+/**
+ * Generate a CSRF token and store it in the session.
+ * @return string The generated token.
+ */
+function generate_csrf_token() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Output a hidden input field with the CSRF token.
+ */
+function csrf_input() {
+    $token = generate_csrf_token();
+    echo '<input type="hidden" name="csrf_token" value="' . $token . '">';
+}
+
+/**
+ * Verify the submitted CSRF token.
+ * @param string $token The token submitted with the form.
+ * @return bool True if valid, False otherwise.
+ */
+function verify_csrf_token($token) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
+        return false;
+    }
+    return true;
+}
 ?>
