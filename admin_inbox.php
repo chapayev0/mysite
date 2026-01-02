@@ -7,9 +7,57 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Handle Delete Actions
+if (isset($_GET['delete_inquiry'])) {
+    $id = intval($_GET['delete_inquiry']);
+    $conn->query("DELETE FROM class_inquiries WHERE id = $id");
+    header("Location: admin_inbox.php?tab=inquiries");
+    exit();
+}
+
+if (isset($_GET['delete_thread'])) {
+    $student_id = intval($_GET['delete_thread']);
+    // Delete all messages between admin and this student
+    $conn->query("DELETE FROM messages WHERE sender_id = $student_id OR receiver_id = $student_id");
+    header("Location: admin_inbox.php?tab=messages");
+    exit();
+}
+
+$active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'inquiries';
+
 // Fetch inquiries
 $inquiries_sql = "SELECT * FROM class_inquiries ORDER BY created_at DESC";
 $inquiries_res = $conn->query($inquiries_sql);
+
+// Fetch Student Messages Threads
+// Group by student (other party). We want the latest message details.
+// This is a bit complex in MySQL without window functions if on old versions, but let's try a correlated subquery or just group by.
+// Better: SELECT DISTINCT user_id... but we want the last message.
+// Strategy: Get all unique conversation partners.
+$threads = [];
+$thread_sql = "
+    SELECT 
+        u.id as student_id, 
+        s.first_name, 
+        s.last_name,
+        (SELECT message FROM messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_message,
+        (SELECT created_at FROM messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_activity,
+        (SELECT COUNT(*) FROM messages WHERE sender_id = u.id AND receiver_id = ? AND is_read = 0) as unread_count
+    FROM users u
+    JOIN students s ON u.id = s.user_id
+    JOIN messages m ON u.id = m.sender_id OR u.id = m.receiver_id
+    WHERE u.role = 'student' AND (m.sender_id = ? OR m.receiver_id = ?)
+    GROUP BY u.id
+    ORDER BY last_activity DESC
+";
+
+// We need admin ID.
+$admin_id = $_SESSION['user_id'];
+$stmt = $conn->prepare($thread_sql);
+// We need to bind params: admin_id appears 6 times
+$stmt->bind_param("iiiiiii", $admin_id, $admin_id, $admin_id, $admin_id, $admin_id, $admin_id, $admin_id);
+$stmt->execute();
+$threads_res = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,6 +116,62 @@ $inquiries_res = $conn->query($inquiries_sql);
             color: var(--gray);
             font-size: 1.1rem;
         }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--primary);
+        }
+
+        .action-btn {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .btn-reply {
+            background: #E0F2FE;
+            color: #0284C7;
+        }
+
+        .btn-delete {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .unread-badge {
+            background: #EF4444;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +185,12 @@ $inquiries_res = $conn->query($inquiries_sql);
             </div>
         </div>
 
+        <div class="tabs">
+            <a href="?tab=inquiries" class="tab <?php echo $active_tab == 'inquiries' ? 'active' : ''; ?>">Class Inquiries</a>
+            <a href="?tab=messages" class="tab <?php echo $active_tab == 'messages' ? 'active' : ''; ?>">Student Messages</a>
+        </div>
+
+        <?php if ($active_tab == 'inquiries'): ?>
         <div class="table-container">
             <table>
                 <thead>
@@ -130,6 +240,49 @@ $inquiries_res = $conn->query($inquiries_sql);
                 </tbody>
             </table>
         </div>
+        </div>
+        <?php else: ?>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Student Name</th>
+                        <th style="width: 45%;">Last Message</th>
+                        <th style="width: 15%;">Last Active</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($threads_res->num_rows > 0): ?>
+                        <?php while ($row = $threads_res->fetch_assoc()): ?>
+                            <tr style="<?php echo $row['unread_count'] > 0 ? 'background: #F8FAFC;' : ''; ?>">
+                                <td>
+                                    <strong><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></strong>
+                                    <?php if ($row['unread_count'] > 0): ?>
+                                        <span class="unread-badge"><?php echo $row['unread_count']; ?> new</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php echo htmlspecialchars(mb_strimwidth($row['last_message'], 0, 80, "...")); ?>
+                                </td>
+                                <td style="color: var(--gray); font-size: 0.85rem;">
+                                    <?php echo date('M d, h:i A', strtotime($row['last_activity'])); ?>
+                                </td>
+                                <td>
+                                    <a href="admin_chat.php?student_id=<?php echo $row['student_id']; ?>" class="action-btn btn-reply">Reply</a>
+                                    <a href="?tab=messages&delete_thread=<?php echo $row['student_id']; ?>" class="action-btn btn-delete" onclick="return confirm('Are you sure? This will delete the entire conversation history.')">Delete</a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="4" class="empty-state">No student messages yet.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>
