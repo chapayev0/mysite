@@ -13,14 +13,25 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
         mkdir($uploadDir, 0777, true);
     }
 
-    $fileName = uniqid() . '_' . basename($_FILES['file']['name']);
-    $targetPath = $uploadDir . $fileName;
+    // Validate file type (Secure MIME check)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $_FILES['file']['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/webp' => 'webp'
+    ];
     
-    // Validate file type
-    $fileType = strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
-    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+    if (array_key_exists($mimeType, $allowedMimes)) {
+        // Force extension to match mime type
+        $ext = $allowedMimes[$mimeType];
+        $fileName = uniqid() . '.' . $ext;
+        $targetPath = $uploadDir . $fileName;
     
-    if (in_array($fileType, $allowedTypes)) {
+
         if (move_uploaded_file($_FILES['file']['tmp_name'], $targetPath)) {
             echo json_encode(['location' => $targetPath]);
         } else {
@@ -29,7 +40,7 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
         }
     } else {
         http_response_code(400);
-        echo json_encode(['error' => 'Invalid file type.']);
+        echo json_encode(['error' => 'Invalid file type. Detected: ' . $mimeType]);
     }
 } else {
     http_response_code(400);

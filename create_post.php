@@ -21,15 +21,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
         // Handle Featured Image Upload
         $image_path = null;
         if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == 0) {
-            $uploadDir = 'uploads/wall_thumbnails/';
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $fileName = uniqid() . '_' . basename($_FILES['featured_image']['name']);
-            $targetPath = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $targetPath)) {
-                $image_path = $targetPath;
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $_FILES['featured_image']['tmp_name']);
+            finfo_close($finfo);
+
+            $allowedMimes = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp'
+            ];
+
+            if (array_key_exists($mimeType, $allowedMimes)) {
+                $uploadDir = 'uploads/wall_thumbnails/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                
+                $ext = $allowedMimes[$mimeType];
+                $fileName = uniqid() . '.' . $ext;
+                $targetPath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $targetPath)) {
+                    $image_path = $targetPath;
+                }
             }
         }
 
