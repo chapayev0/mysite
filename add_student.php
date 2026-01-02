@@ -231,6 +231,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-top: 0.5rem;
         }
     </style>
+    <script src="assest/js/password-toggle.js" defer></script>
 </head>
 <body>
     <div class="sidebar">

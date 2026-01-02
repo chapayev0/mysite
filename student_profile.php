@@ -209,6 +209,7 @@ if ($result->num_rows > 0) {
             color: #991b1b;
         }
     </style>
+    <script src="assest/js/password-toggle.js" defer></script>
 </head>
 <body>
     <?php include 'student_sidebar.php'; ?>

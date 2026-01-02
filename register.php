@@ -83,6 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         /* Responsive */
         @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } .section-title { grid-column: span 1; } }
     </style>
+    <script src="assest/js/password-toggle.js" defer></script>
 </head>
 <body>
     <div class="card">

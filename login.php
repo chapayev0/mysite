@@ -148,6 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: var(--primary);
         }
     </style>
+    <script src="assest/js/password-toggle.js" defer></script>
 </head>
 <body>
     <div class="login-container">
