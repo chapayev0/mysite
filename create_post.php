@@ -13,10 +13,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
     $student_id = $_SESSION['user_id'];
 
     if (!empty($title) && !empty($content)) {
-        $stmt = $conn->prepare("INSERT INTO wall_posts (student_id, title, content) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $student_id, $title, $content);
+        // Handle Featured Image Upload
+        $image_path = null;
+        if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == 0) {
+            $uploadDir = 'uploads/wall_thumbnails/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $fileName = uniqid() . '_' . basename($_FILES['featured_image']['name']);
+            $targetPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $targetPath)) {
+                $image_path = $targetPath;
+            }
+        }
+
+        $stmt = $conn->prepare("INSERT INTO wall_posts (student_id, title, content, image_path, status) VALUES (?, ?, ?, ?, 'pending')");
+        $stmt->bind_param("isss", $student_id, $title, $content, $image_path);
         if ($stmt->execute()) {
-            header("Location: wall_of_talent.php");
+            // Redirect with success message (maybe add query param)
+            header("Location: wall_of_talent.php?msg=pending");
             exit();
         } else {
             $error = "Failed to publish post.";
@@ -98,11 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publish'])) {
     <div class="main-content">
         <div class="card">
             <h1 style="margin-top: 0;">Create New Post</h1>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Posts will be reviewed by admin before appearing on the public wall.</p>
             
-            <form method="POST" id="postForm">
+            <form method="POST" id="postForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="label">Title</label>
                     <input type="text" name="title" class="input-text" required placeholder="Enter post title...">
+                </div>
+
+                <div class="form-group">
+                    <label class="label">Featured Image (Thumbnail)</label>
+                    <input type="file" name="featured_image" class="input-text" accept="image/*">
+                    <small style="color: var(--gray);">This image will be shown on the Wall card.</small>
                 </div>
 
                 <div class="form-group">
