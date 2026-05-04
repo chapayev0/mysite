@@ -279,21 +279,25 @@
 
             <div class="progress-container">
                 <div class="progress-text">Progress: <span id="progressText">0/4</span> states found</div>
-                <div class="progress-bar">
+                <div class="progress-bar" style="margin-bottom: 1.5rem;">
                     <div id="progressFill" class="progress-fill"></div>
                 </div>
+                <button class="btn-reset" style="width: 100%; font-size: 1rem; padding: 0.8rem;" onclick="resetSimulator()">
+                    <i class="fas fa-redo"></i> Reset Table
+                </button>
             </div>
         </div>
 
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="modal-overlay">
-        <div class="modal-content">
+    <div id="successModal" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content" style="position: relative;">
+            <button onclick="closeModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;"><i class="fas fa-times"></i></button>
             <i class="fas fa-microchip"></i>
             <h2>Simulation Complete!</h2>
             <p>You've successfully explored all combinations for the <span id="modalGateName">AND</span> gate.</p>
-            <button class="btn-reset" onclick="resetSimulator()">Restart Gate</button>
+            <button class="btn-reset" onclick="closeModal()">Close Window</button>
         </div>
     </div>
 
@@ -509,6 +513,10 @@
             
             successModal.classList.remove('show');
             updateLogic();
+        }
+
+        function closeModal() {
+            successModal.classList.remove('show');
         }
 
         // Event Listeners for Switches
