@@ -419,8 +419,12 @@ border: 1px solid ${borderRgba};`;
             blurSlider.addEventListener('input', updateGlass);
             opacitySlider.addEventListener('input', updateGlass);
             borderSlider.addEventListener('input', updateGlass);
+            
             colorPicker.addEventListener('input', updateGlass);
+            colorPicker.addEventListener('change', updateGlass);
+            
             borderColorPicker.addEventListener('input', updateGlass);
+            borderColorPicker.addEventListener('change', updateGlass);
 
             // Initial render
             updateGlass();
