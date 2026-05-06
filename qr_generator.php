@@ -2,13 +2,14 @@
 session_start();
 include 'db_connect.php';
 ?>
+<?php
+$seo_title = "Premium QR Code Generator | Free Custom QR Codes";
+$seo_description = "Create beautiful, high-resolution QR codes for free. Customize colors, styles, and embed your own center logo directly from your browser.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium QR Code Generator | Tools</title>
-    <link rel="icon" type="image/png" href="assest/logo/logo1.png">
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assest/css/style.css">
