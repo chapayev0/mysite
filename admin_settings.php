@@ -10,46 +10,51 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $message = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_db'])) {
-    $sql_file = __DIR__ . '/db_updates.sql';
+function execute_sql($conn, $sql, $success_msg) {
+    if (trim($sql) === '') {
+        return "<div class='error-msg'>SQL query is empty.</div>";
+    }
     
-    if (file_exists($sql_file)) {
-        // Read the SQL file
-        $sql = file_get_contents($sql_file);
-        
-        // Remove BOM or null bytes that might cause issues
-        $sql = str_replace("\0", "", $sql);
-        
-        if (trim($sql) !== '') {
-            // Execute multi_query
-            if ($conn->multi_query($sql)) {
-                $success = true;
-                do {
-                    // Consume all results to free the connection
-                    if ($result = $conn->store_result()) {
-                        $result->free();
-                    }
-                    if (!$conn->more_results()) {
-                        break;
-                    }
-                    if (!$conn->next_result()) {
-                        $success = false;
-                        $message = "<div class='error-msg'>Error executing query: " . htmlspecialchars($conn->error) . "</div>";
-                        break;
-                    }
-                } while (true);
-                
-                if ($success) {
-                    $message = "<div class='success-msg'>Database updated successfully from db_updates.sql!</div>";
-                }
-            } else {
-                $message = "<div class='error-msg'>Error executing db_updates.sql: " . htmlspecialchars($conn->error) . "</div>";
+    if ($conn->multi_query($sql)) {
+        $success = true;
+        $error_msg = "";
+        do {
+            if ($result = $conn->store_result()) {
+                $result->free();
             }
+            if (!$conn->more_results()) {
+                break;
+            }
+            if (!$conn->next_result()) {
+                $success = false;
+                $error_msg = $conn->error;
+                break;
+            }
+        } while (true);
+        
+        if ($success) {
+            return "<div class='success-msg'>" . htmlspecialchars($success_msg) . "</div>";
         } else {
-            $message = "<div class='error-msg'>db_updates.sql is empty.</div>";
+            return "<div class='error-msg'>Error executing query: " . htmlspecialchars($error_msg) . "</div>";
         }
     } else {
-        $message = "<div class='error-msg'>db_updates.sql file not found.</div>";
+        return "<div class='error-msg'>Error executing SQL: " . htmlspecialchars($conn->error) . "</div>";
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['update_db'])) {
+        $sql_file = __DIR__ . '/db_updates.sql';
+        if (file_exists($sql_file)) {
+            $sql = file_get_contents($sql_file);
+            $sql = str_replace("\0", "", $sql);
+            $message = execute_sql($conn, $sql, "Database updated successfully from db_updates.sql!");
+        } else {
+            $message = "<div class='error-msg'>db_updates.sql file not found.</div>";
+        }
+    } elseif (isset($_POST['execute_custom_sql'])) {
+        $custom_sql = $_POST['custom_sql'] ?? '';
+        $message = execute_sql($conn, $custom_sql, "Custom SQL executed successfully!");
     }
 }
 ?>
@@ -81,6 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_db'])) {
         
         .sql-preview { background: #1E293B; color: #E2E8F0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; overflow-x: auto; max-height: 300px; overflow-y: auto; margin-bottom: 1.5rem; white-space: pre-wrap; }
         
+        .sql-textarea { width: 100%; min-height: 200px; background: #1E293B; color: #E2E8F0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; border: 1px solid #334155; margin-bottom: 1.5rem; box-sizing: border-box; resize: vertical; }
+        .sql-textarea:focus { outline: none; border-color: #0066FF; }
+
         @media (max-width: 768px) { .main-content { margin-left: 0; } }
     </style>
 </head>
@@ -97,14 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_db'])) {
             <?php echo $message; ?>
 
             <div class="card">
-                <h2>Database Sync</h2>
+                <h2>Sync from db_updates.sql</h2>
                 <p>
-                    Use this tool to synchronize your local database changes to the live server. 
-                    Place your SQL statements (e.g., <code>CREATE TABLE IF NOT EXISTS</code> or <code>ALTER TABLE</code>) 
-                    inside the <strong>db_updates.sql</strong> file located in the root directory.
-                </p>
-                <p>
-                    When you click the button below, the system will read the file and execute all queries sequentially.
+                    Execute all SQL statements currently saved in your <strong>db_updates.sql</strong> file in the root directory.
                 </p>
 
                 <?php 
@@ -118,12 +121,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_db'])) {
                     <form method="POST" action="" onsubmit="return confirm('Are you sure you want to execute db_updates.sql? This action cannot be undone.');">
                         <button type="submit" name="update_db" class="btn-primary">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                            Update Database
+                            Execute File
                         </button>
                     </form>
                 <?php else: ?>
                     <div class="error-msg">The file <strong>db_updates.sql</strong> was not found in the root directory.</div>
                 <?php endif; ?>
+            </div>
+
+            <div class="card">
+                <h2>Execute Custom SQL</h2>
+                <p>
+                    Paste your custom SQL queries below and execute them directly without modifying the file.
+                </p>
+                <form method="POST" action="" onsubmit="return confirm('Are you sure you want to execute this custom SQL? This action cannot be undone.');">
+                    <textarea name="custom_sql" class="sql-textarea" placeholder="CREATE TABLE IF NOT EXISTS new_table (...);"></textarea>
+                    
+                    <button type="submit" name="execute_custom_sql" class="btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        Run Custom SQL
+                    </button>
+                </form>
             </div>
         </div>
     </div>
