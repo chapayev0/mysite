@@ -450,6 +450,7 @@ include 'db_connect.php';
             const qrCode = new QRCodeStyling({
                 width: 300,
                 height: 300,
+                margin: 24, // Proportional white border for the 300x300 preview
                 type: "svg",
                 data: "https://example.com",
                 image: "",
@@ -508,6 +509,9 @@ include 'db_connect.php';
                 const logoMargin = parseInt(logoMarginInput.value) || 0;
 
                 qrCode.update({
+                    width: 300,
+                    height: 300,
+                    margin: 24,
                     data: data,
                     image: logoUrl,
                     backgroundOptions: { color: bgColor },
@@ -575,7 +579,31 @@ include 'db_connect.php';
             // Download Functionality
             downloadBtn.addEventListener('click', () => {
                 const format = fileFormatSelect.value;
-                qrCode.download({ name: "qr-code", extension: format });
+                
+                // Create a separate, high-resolution instance specifically for downloading
+                const data = dataInput.value || "https://example.com";
+                const bgColor = bgColorInput.value;
+                const dotsColor = dotsColorInput.value;
+                const markerBorderColor = markerBorderColorInput.value;
+                const markerCenterColor = markerCenterColorInput.value;
+                const logoUrl = currentLogoDataUrl || logoUrlInput.value;
+                const logoMargin = parseInt(logoMarginInput.value) || 0;
+
+                const downloadQrCode = new QRCodeStyling({
+                    width: 500,
+                    height: 500,
+                    margin: 40, // Extra large white space for the 500x500 download
+                    type: format === 'svg' ? 'svg' : 'canvas',
+                    data: data,
+                    image: logoUrl,
+                    backgroundOptions: { color: bgColor },
+                    dotsOptions: { color: dotsColor, type: currentDotStyle },
+                    cornersSquareOptions: { color: markerBorderColor, type: currentMarkerBorderStyle },
+                    cornersDotOptions: { color: markerCenterColor, type: currentMarkerCenterStyle },
+                    imageOptions: { crossOrigin: "anonymous", margin: logoMargin }
+                });
+
+                downloadQrCode.download({ name: "qr-code", extension: format });
             });
 
             fileFormatSelect.addEventListener('change', () => {
