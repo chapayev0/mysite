@@ -47,12 +47,14 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 ?>
+<?php
+$seo_title = "ICT Past Papers & Tutorials | Dilhara Academy";
+$seo_description = "Access a comprehensive archive of ICT past papers, model papers, term tests, and tutorials for O/L and A/L students.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Archive | ICT with Dilhara</title>
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {

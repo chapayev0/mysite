@@ -9,12 +9,14 @@ $sql = "SELECT wp.*, s.first_name, s.last_name
         ORDER BY wp.created_at DESC";
 $result = $conn->query($sql);
 ?>
+<?php
+$seo_title = "Wall of Talent | Student Showcases";
+$seo_description = "Discover the creative projects, articles, and achievements of our bright students on the Wall of Talent.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wall of Talent | ICT with Dilhara</title>
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {

@@ -59,13 +59,14 @@ $grades_result = $conn->query($grades_query);
 $other_categories_query = "SELECT * FROM playground_categories WHERE is_grade_based = FALSE AND status = 'active' ORDER BY display_order ASC";
 $other_categories_result = $conn->query($other_categories_query);
 ?>
+<?php
+$seo_title = "Interactive Games & Quizzes | ICT Playground";
+$seo_description = "Learn ICT through play! Explore our educational games, logic puzzles, and interactive quizzes designed for students of all grades.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playground | ICT with Dilhara</title>
-    <link rel="icon" type="image/png" href="assest/logo/logo1.png">
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assest/css/style.css">

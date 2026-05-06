@@ -1,0 +1,12 @@
+# Prevent access to .env files and other hidden configuration files
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Prevent access to the .htaccess file itself just to be safe
+<FilesMatch "^\.htaccess">
+    Require all denied
+</FilesMatch>
+
+# Prevent directory listing (so users can't see all files in your folders)
+Options -Indexes

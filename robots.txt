@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow indexing of admin and backend files
+Disallow: /admin_*
+Disallow: /db_connect.php
+Disallow: /setup_*.php
+Disallow: /db_updates.sql
+
+# Optional: Link to a sitemap if you create one later
+# Sitemap: http://yourdomain.com/sitemap.xml

@@ -53,13 +53,14 @@ if ($selected_category) {
     $cat_stmt->close();
 }
 ?>
+<?php
+$seo_title = "Educational Tools & Utilities | ICT with Dilhara";
+$seo_description = "Explore our extensive library of digital tools, utilities, and calculators to assist your ICT studies and digital projects.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tools Hub | ICT with Dilhara</title>
-    <link rel="icon" type="image/png" href="assest/logo/logo1.png">
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assest/css/style.css">

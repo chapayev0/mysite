@@ -1,11 +1,12 @@
-<?php include 'db_connect.php'; ?>
+<?php 
+include 'db_connect.php'; 
+$seo_title = "ICT with Dilhara ICT Academy | Excellence in Digital Education";
+$seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive tools, and a dynamic learning playground designed for student success.";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICT with Dilhara ICT Academy | Excellence in Digital Education</title>
-    <link rel="icon" type="image/png" href="assest/logo/logo1.png">
+    <?php include 'head_seo.php'; ?>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
