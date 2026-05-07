@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Setup Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0F172A;
+            --panel-bg: #1E293B;
+            --text-color: #F8FAFC;
+            --accent-cyan: #00D4FF;
+            --accent-purple: #7C3AED;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --desk-color: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            padding: 1rem 2rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00D4FF 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-panel {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.connected {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .status-badge.disconnected {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1E293B 0%, #0F172A 100%);
+            perspective: 1000px;
+        }
+
+        /* SVG layer for cables */
+        #cable-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .cable-path {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+
+        .cable-path.power { stroke: #101010; }
+        .cable-path.vga { stroke: #3B82F6; }
+        .cable-path.usb { stroke: #64748B; }
+
+        /* Desk */
+        .desk {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background: linear-gradient(to bottom, #334155 0%, #0F172A 100%);
+            border-top: 4px solid #475569;
+            z-index: 1;
+            transform-origin: bottom;
+            transform: rotateX(20deg);
+        }
+
+        /* Devices */
+        .device {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .device-label {
+            background: rgba(0,0,0,0.6);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            pointer-events: none;
+        }
+
+        /* Monitor */
+        #monitor {
+            bottom: 25%;
+            left: 30%;
+            width: 280px;
+            transform: translateX(-50%);
+        }
+
+        .monitor-screen {
+            width: 100%;
+            height: 180px;
+            background: #000;
+            border: 12px solid #1e1e1e;
+            border-bottom-width: 24px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .monitor-stand {
+            width: 60px;
+            height: 40px;
+            background: #2a2a2a;
+            margin: 0 auto;
+        }
+
+        .monitor-base {
+            width: 120px;
+            height: 10px;
+            background: #333;
+            border-radius: 10px 10px 0 0;
+            margin: 0 auto;
+        }
+
+        .screen-content {
+            opacity: 0;
+            transition: opacity 1s;
+            text-align: center;
+        }
+
+        .screen-content img {
+            width: 60px;
+            margin-bottom: 10px;
+        }
+
+        .power-led {
+            position: absolute;
+            bottom: -16px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+            box-shadow: 0 0 5px #000;
+        }
+
+        .power-led.on {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+        
+        .power-led.standby {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+        }
+
+        /* System Unit (PC Tower) */
+        #system-unit {
+            bottom: 25%;
+            left: 60%;
+            width: 140px;
+            transform: translateX(-50%);
+        }
+
+        .tower {
+            width: 100%;
+            height: 260px;
+            background: linear-gradient(to right, #1a1a1a, #2a2a2a);
+            border-radius: 8px;
+            border: 2px solid #333;
+            position: relative;
+            box-shadow: -10px 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .tower-front {
+            flex: 1;
+            border: 1px solid #111;
+            background: #111;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .power-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #444;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .power-button i {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .power-button:active {
+            transform: scale(0.9);
+        }
+
+        .power-button.active i {
+            color: var(--success);
+            text-shadow: 0 0 8px var(--success);
+        }
+
+        /* Back Panel Ports */
+        .back-panel {
+            position: absolute;
+            top: 20px;
+            left: -30px; /* Showing on the left side of the tower visually */
+            width: 30px;
+            height: 200px;
+            background: #ccc;
+            border-radius: 4px 0 0 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            gap: 15px;
+            border: 1px solid #999;
+        }
+
+        .port {
+            width: 20px;
+            height: 14px;
+            background: #222;
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .port.vga-port { background: #3B82F6; height: 12px; border-radius: 3px 3px 6px 6px; }
+        .port.usb-port { height: 8px; width: 16px; }
+        .port.power-port { height: 16px; background: #111; }
+        
+        .port::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: -80px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            z-index: 20;
+        }
+
+        .port:hover::after {
+            opacity: 1;
+        }
+
+        /* Keyboard and Mouse */
+        #keyboard {
+            bottom: 10%;
+            left: 30%;
+            transform: translateX(-50%);
+            perspective: 500px;
+        }
+
+        .keyboard-body {
+            width: 220px;
+            height: 70px;
+            background: #222;
+            border-radius: 6px;
+            border-bottom: 6px solid #111;
+            transform: rotateX(20deg);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+            display: grid;
+            grid-template-rows: repeat(5, 1fr);
+            padding: 4px;
+            gap: 2px;
+        }
+        
+        .key-row {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .key {
+            flex: 1;
+            background: #333;
+            border-radius: 2px;
+            border-bottom: 2px solid #111;
+        }
+
+        #mouse {
+            bottom: 10%;
+            left: 45%;
+        }
+
+        .mouse-body {
+            width: 40px;
+            height: 60px;
+            background: #222;
+            border-radius: 20px 20px 10px 10px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .mouse-wheel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 12px;
+            background: #111;
+            border-radius: 2px;
+        }
+
+        /* Wall Socket */
+        #wall-socket {
+            top: 25%;
+            left: 80%;
+            width: 120px;
+            height: 80px;
+            background: #E2E8F0;
+            border-radius: 8px;
+            border: 2px solid #CBD5E1;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            color: #333;
+        }
+
+        .socket-port {
+            width: 30px;
+            height: 30px;
+            background: #F8FAFC;
+            border-radius: 50%;
+            border: 1px solid #CBD5E1;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .socket-holes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            align-items: center;
+            justify-items: center;
+        }
+        
+        .socket-holes .hole {
+            width: 6px;
+            height: 8px;
+            background: #111;
+            border-radius: 2px;
+        }
+        
+        .socket-holes .earth {
+            grid-column: span 2;
+            width: 8px;
+            height: 10px;
+            margin-bottom: 2px;
+        }
+
+        .main-switch {
+            width: 20px;
+            height: 30px;
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .main-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            height: 12px;
+            background: #EF4444;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .main-switch.on::after {
+            top: auto;
+            bottom: 2px;
+            background: var(--success);
+        }
+
+        /* Plugs */
+        .plug {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            z-index: 50;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+
+        .plug:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        .plug-icon {
+            width: 16px;
+            height: 16px;
+            background: #333;
+        }
+        
+        .plug-vga .plug-icon { background: #3B82F6; border-radius: 2px 2px 4px 4px; height: 10px; }
+        .plug-usb .plug-icon { background: #64748B; width: 12px; height: 8px; border-radius: 1px; }
+        .plug-power .plug-icon { background: #111; border-radius: 50%; }
+
+        .plug.connected {
+            display: none; /* Hide plug when connected, as we just show cable to port */
+        }
+        
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 3rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .modal-text {
+            color: #94A3B8;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00D4FF 0%, #0066FF 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .instructions {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 300px;
+            z-index: 20;
+        }
+
+        .instructions h3 {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .instructions ul {
+            list-style: none;
+        }
+
+        .instructions li {
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 0.5rem;
+            color: #94A3B8;
+        }
+        
+        .instructions li i {
+            color: var(--accent-purple);
+            margin-top: 3px;
+        }
+        
+        .instructions li.done {
+            color: var(--success);
+            text-decoration: line-through;
+        }
+        .instructions li.done i {
+            color: var(--success);
+        }
+
+        /* Screen animations */
+        @keyframes bootLogo {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .booting .screen-content {
+            opacity: 1;
+        }
+        
+        .booting .boot-logo {
+            animation: bootLogo 1s forwards;
+        }
+        
+        .desktop .screen-content {
+            opacity: 1;
+            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=400&q=80') center/cover;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 10px;
+        }
+        
+        .desktop .boot-logo { display: none; }
+        .desktop .taskbar {
+            width: 100%;
+            height: 16px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+        }
+        .desktop .start-btn { width: 10px; height: 10px; background: #00D4FF; border-radius: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">
+            <i class="fas fa-desktop"></i>
+            Computer Setup Simulator
+        </div>
+        <div class="status-panel">
+            <div class="status-badge" id="power-status">
+                <i class="fas fa-bolt"></i> No Power
+            </div>
+            <div class="status-badge" id="pc-status">
+                <i class="fas fa-power-off"></i> PC Off
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <svg id="cable-layer"></svg>
+        <div class="desk"></div>
+
+        <div class="instructions">
+            <h3>Mission Objectives</h3>
+            <ul id="task-list">
+                <li id="task-monitor-power"><i class="fas fa-plug"></i> Connect Monitor to Main Power</li>
+                <li id="task-su-power"><i class="fas fa-plug"></i> Connect System Unit to Main Power</li>
+                <li id="task-vga"><i class="fas fa-network-wired"></i> Connect Monitor to System Unit (VGA)</li>
+                <li id="task-keyboard"><i class="fas fa-keyboard"></i> Connect Keyboard to System Unit</li>
+                <li id="task-mouse"><i class="fas fa-mouse"></i> Connect Mouse to System Unit</li>
+                <li id="task-switch"><i class="fas fa-toggle-on"></i> Turn on Main Switch</li>
+                <li id="task-boot"><i class="fas fa-power-off"></i> Turn on System Unit</li>
+            </ul>
+        </div>
+
+        <!-- Devices -->
+        <div class="device" id="monitor">
+            <div class="device-label">Monitor</div>
+            <div class="monitor-screen">
+                <div class="screen-content">
+                    <i class="fas fa-windows boot-logo" style="font-size: 40px; color: #00D4FF;"></i>
+                    <div class="taskbar" style="display:none;"><div class="start-btn"></div></div>
+                </div>
+                <div class="power-led" id="monitor-led"></div>
+            </div>
+            <div class="monitor-stand"></div>
+            <div class="monitor-base"></div>
+        </div>
+
+        <div class="device" id="system-unit">
+            <div class="device-label">System Unit</div>
+            <div class="tower">
+                <div class="back-panel">
+                    <div class="port power-port target-port" data-type="power-su" data-tooltip="Power In"></div>
+                    <div class="port vga-port target-port" data-type="vga" data-tooltip="VGA Port"></div>
+                    <div class="port usb-port target-port" data-type="usb" data-tooltip="USB (Keyboard)"></div>
+                    <div class="port usb-port target-port" data-type="usb" data-tooltip="USB (Mouse)"></div>
+                </div>
+                <div class="tower-front">
+                    <div class="power-button" id="pc-power-btn" title="Power Button">
+                        <i class="fas fa-power-off"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="device" id="keyboard">
+            <div class="device-label">Keyboard</div>
+            <div class="keyboard-body">
+                <div class="key-row"><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div></div>
+                <div class="key-row"><div class="key" style="flex: 1.5"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="flex: 1.5"></div></div>
+                <div class="key-row"><div class="key" style="flex: 1.8"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="flex: 2.2"></div></div>
+                <div class="key-row"><div class="key" style="flex: 2.5"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="flex: 2.5"></div></div>
+                <div class="key-row"><div class="key" style="flex: 1.5"></div><div class="key" style="flex: 1.5"></div><div class="key" style="flex: 1.5"></div><div class="key" style="flex: 6"></div><div class="key" style="flex: 1.5"></div><div class="key" style="flex: 1.5"></div><div class="key" style="flex: 1.5"></div></div>
+            </div>
+        </div>
+
+        <div class="device" id="mouse">
+            <div class="device-label">Mouse</div>
+            <div class="mouse-body">
+                <div class="mouse-wheel"></div>
+            </div>
+        </div>
+
+        <div class="device" id="wall-socket">
+            <div class="device-label" style="top: -30px; position: absolute;">Wall Socket</div>
+            <div class="socket-port target-port" data-type="power" data-tooltip="Main Socket 1">
+                <div class="socket-holes"><div class="hole earth"></div><div class="hole"></div><div class="hole"></div></div>
+            </div>
+            <div class="socket-port target-port" data-type="power" data-tooltip="Main Socket 2">
+                <div class="socket-holes"><div class="hole earth"></div><div class="hole"></div><div class="hole"></div></div>
+            </div>
+            <div class="main-switch" id="main-switch" title="Main Switch"></div>
+        </div>
+
+        <!-- Plugs that can be dragged -->
+        <div class="plug plug-power draggable" id="plug-monitor-power" data-source="monitor" data-type="power" style="top: 60%; left: 20%;">
+            <div class="plug-icon"></div>
+        </div>
+        <div class="plug plug-vga draggable" id="plug-monitor-vga" data-source="monitor" data-type="vga" style="top: 65%; left: 35%;">
+            <div class="plug-icon"></div>
+        </div>
+        <div class="plug plug-power draggable" id="plug-su-power" data-source="system-unit" data-type="power" style="top: 60%; left: 75%;">
+            <div class="plug-icon"></div>
+        </div>
+        <div class="plug plug-usb draggable" id="plug-keyboard-usb" data-source="keyboard" data-type="usb" style="top: 80%; left: 20%;">
+            <div class="plug-icon"></div>
+        </div>
+        <div class="plug plug-usb draggable" id="plug-mouse-usb" data-source="mouse" data-type="usb" style="top: 80%; left: 55%;">
+            <div class="plug-icon"></div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="success-modal">
+        <div class="modal-content">
+            <i class="fas fa-check-circle modal-icon"></i>
+            <h2 class="modal-title">System Ready!</h2>
+            <p class="modal-text">Great job! You have successfully connected all the components and booted up the computer.</p>
+            <button class="btn" onclick="location.reload()"><i class="fas fa-redo"></i> Play Again</button>
+            <a href="../../playground.php" class="btn" style="background: transparent; border: 1px solid var(--accent-cyan); margin-left: 10px;">Back to Playground</a>
+        </div>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            connections: {
+                monitorPower: false,
+                suPower: false,
+                vga: false,
+                keyboard: false,
+                mouse: false
+            },
+            mainSwitchOn: false,
+            pcOn: false,
+            portsOccupied: new Set()
+        };
+
+        const svg = document.getElementById('cable-layer');
+        const container = document.getElementById('game-container');
+        
+        // Element references
+        const cables = {};
+        
+        function createCable(id, type) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.classList.add('cable-path', type);
+            path.id = 'cable-' + id;
+            svg.appendChild(path);
+            cables[id] = path;
+            return path;
+        }
+
+        // Initialize cables
+        createCable('monitor-power', 'power');
+        createCable('monitor-vga', 'vga');
+        createCable('su-power', 'power');
+        createCable('keyboard-usb', 'usb');
+        createCable('mouse-usb', 'usb');
+
+        // Draw bezier curve between two points
+        function drawCurve(path, x1, y1, x2, y2) {
+            const cx1 = x1;
+            const cy1 = y1 + Math.abs(y2 - y1) / 2 + 50; // Curve downwards
+            const cx2 = x2;
+            const cy2 = y2 + Math.abs(y2 - y1) / 2 + 50;
+            path.setAttribute('d', `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+        }
+
+        function getCenter(el) {
+            const rect = el.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            return {
+                x: rect.left - containerRect.left + rect.width / 2,
+                y: rect.top - containerRect.top + rect.height / 2
+            };
+        }
+
+        function getSourcePoint(sourceId) {
+            const sourceEl = document.getElementById(sourceId);
+            const center = getCenter(sourceEl);
+            if (sourceId === 'monitor') center.y += 50;
+            if (sourceId === 'system-unit') { center.x -= 70; center.y += 50; }
+            if (sourceId === 'keyboard') center.y -= 20;
+            if (sourceId === 'mouse') center.y -= 20;
+            return center;
+        }
+
+        function updateCables() {
+            document.querySelectorAll('.plug').forEach(plug => {
+                const id = plug.id.replace('plug-', '');
+                const source = plug.getAttribute('data-source');
+                const path = cables[id];
+                
+                const p1 = getSourcePoint(source);
+                let p2;
+                
+                if (plug.classList.contains('connected')) {
+                    const port = document.querySelector(`[data-connected="${plug.id}"]`);
+                    if (port) {
+                        p2 = getCenter(port);
+                    }
+                } else {
+                    p2 = getCenter(plug);
+                }
+                
+                if (p1 && p2) {
+                    drawCurve(path, p1.x, p1.y, p2.x, p2.y);
+                }
+            });
+        }
+
+        // Drag and Drop Logic
+        let activeDrag = null;
+        let startX, startY, initX, initY;
+
+        document.querySelectorAll('.plug.draggable').forEach(plug => {
+            plug.addEventListener('mousedown', startDrag);
+            plug.addEventListener('touchstart', startDrag, {passive: false});
+        });
+
+        function startDrag(e) {
+            if (e.target.closest('.plug').classList.contains('connected')) return;
+            activeDrag = e.target.closest('.plug');
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            startX = clientX;
+            startY = clientY;
+            
+            const rect = activeDrag.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            initX = rect.left - containerRect.left;
+            initY = rect.top - containerRect.top;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('touchend', stopDrag);
+            e.preventDefault();
+        }
+
+        function drag(e) {
+            if (!activeDrag) return;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            
+            let x = initX + (clientX - startX);
+            let y = initY + (clientY - startY);
+            
+            activeDrag.style.left = x + 'px';
+            activeDrag.style.top = y + 'px';
+            
+            updateCables();
+            checkHover(clientX, clientY);
+            e.preventDefault();
+        }
+
+        function stopDrag(e) {
+            if (!activeDrag) return;
+            
+            const clientX = e.clientX || (e.changedTouches ? e.changedTouches[0].clientX : 0);
+            const clientY = e.clientY || (e.changedTouches ? e.changedTouches[0].clientY : 0);
+            
+            const targetPort = findValidPort(clientX, clientY, activeDrag.getAttribute('data-type'));
+            
+            if (targetPort) {
+                connect(activeDrag, targetPort);
+            } else {
+                // Snap back (simple animation could be added, just instant for now)
+                activeDrag.style.left = activeDrag.getAttribute('data-init-x') || '50%';
+                activeDrag.style.top = activeDrag.getAttribute('data-init-y') || '50%';
+            }
+            
+            // Remove hover states
+            document.querySelectorAll('.target-port').forEach(p => p.style.boxShadow = '');
+            
+            activeDrag = null;
+            updateCables();
+            
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        function checkHover(x, y) {
+            document.querySelectorAll('.target-port').forEach(p => p.style.boxShadow = '');
+            const port = findValidPort(x, y, activeDrag.getAttribute('data-type'));
+            if (port) {
+                port.style.boxShadow = '0 0 15px var(--accent-cyan)';
+            }
+        }
+
+        function findValidPort(x, y, type) {
+            const ports = document.querySelectorAll('.target-port');
+            for (let port of ports) {
+                if (state.portsOccupied.has(port)) continue;
+                
+                const portType = port.getAttribute('data-type');
+                // Check if plug type matches port type (power matches power, power-su matches power, etc)
+                if (type === portType || (type === 'power' && portType === 'power-su') || (type === 'power' && portType === 'power')) {
+                    // special rule: system-unit power plug goes to wall-socket. System unit power port is for a cable... wait.
+                    // Wait, in my design, system unit HAS a power plug, and monitor HAS a power plug. Target is wall socket.
+                    // But I added a power-port on system unit.
+                    // Let's refine: System Unit power plug (id="plug-su-power") -> wall socket. 
+                    // Actually, let's just say 'power' plugs go to 'power' ports.
+                    // The back panel 'power-port' is not used since the cable originates from system unit in my markup. 
+                    // Let's just make 'power' ports valid for 'power' plugs.
+                    // Wait, back panel has a power-port. If it's a target, maybe they drag wall cable to PC?
+                    // In my setup: `<div class="plug ... data-source="system-unit">` -> it originates from SU. Target must be Wall.
+                    // Wall has `data-type="power"`. So it matches.
+                    // Let's hide the back-panel power port to avoid confusion, or make it not a target.
+                    if (portType === 'power-su') continue; 
+                    
+                    const rect = port.getBoundingClientRect();
+                    if (x >= rect.left - 20 && x <= rect.right + 20 && 
+                        y >= rect.top - 20 && y <= rect.bottom + 20) {
+                        return port;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function connect(plug, port) {
+            plug.classList.add('connected');
+            port.setAttribute('data-connected', plug.id);
+            state.portsOccupied.add(port);
+            
+            // Update state
+            const id = plug.id;
+            if (id === 'plug-monitor-power') state.connections.monitorPower = true;
+            if (id === 'plug-su-power') state.connections.suPower = true;
+            if (id === 'plug-monitor-vga') state.connections.vga = true;
+            if (id === 'plug-keyboard-usb') state.connections.keyboard = true;
+            if (id === 'plug-mouse-usb') state.connections.mouse = true;
+            
+            playSound('snap');
+            updateLogic();
+        }
+
+        // Logic and State Management
+        document.getElementById('main-switch').addEventListener('click', function() {
+            this.classList.toggle('on');
+            state.mainSwitchOn = this.classList.contains('on');
+            playSound('click');
+            updateLogic();
+        });
+
+        document.getElementById('pc-power-btn').addEventListener('click', function() {
+            if (!state.pcOn && state.connections.suPower && state.mainSwitchOn) {
+                state.pcOn = true;
+                this.classList.add('active');
+                playSound('boot');
+            } else if (state.pcOn) {
+                state.pcOn = false;
+                this.classList.remove('active');
+            }
+            updateLogic();
+        });
+
+        function updateLogic() {
+            // Task list updates
+            document.getElementById('task-monitor-power').className = state.connections.monitorPower ? 'done' : '';
+            document.getElementById('task-su-power').className = state.connections.suPower ? 'done' : '';
+            document.getElementById('task-vga').className = state.connections.vga ? 'done' : '';
+            document.getElementById('task-keyboard').className = state.connections.keyboard ? 'done' : '';
+            document.getElementById('task-mouse').className = state.connections.mouse ? 'done' : '';
+            document.getElementById('task-switch').className = state.mainSwitchOn ? 'done' : '';
+            document.getElementById('task-boot').className = state.pcOn ? 'done' : '';
+
+            // Monitor LED logic
+            const monitorLed = document.getElementById('monitor-led');
+            const screen = document.querySelector('.monitor-screen');
+            
+            if (state.connections.monitorPower && state.mainSwitchOn) {
+                monitorLed.className = 'power-led standby';
+                
+                if (state.pcOn && state.connections.vga) {
+                    monitorLed.className = 'power-led on';
+                    if (!screen.classList.contains('desktop')) {
+                        screen.classList.add('booting');
+                        setTimeout(() => {
+                            if (state.pcOn) {
+                                screen.classList.remove('booting');
+                                screen.classList.add('desktop');
+                                screen.querySelector('.taskbar').style.display = 'flex';
+                                checkWin();
+                            }
+                        }, 1500);
+                    }
+                } else {
+                    screen.className = 'monitor-screen';
+                    screen.querySelector('.taskbar').style.display = 'none';
+                }
+            } else {
+                monitorLed.className = 'power-led';
+                screen.className = 'monitor-screen';
+                screen.querySelector('.taskbar').style.display = 'none';
+            }
+            
+            // Status Badges
+            const pwrStatus = document.getElementById('power-status');
+            if (state.mainSwitchOn) {
+                pwrStatus.className = 'status-badge connected';
+                pwrStatus.innerHTML = '<i class="fas fa-bolt"></i> Power On';
+            } else {
+                pwrStatus.className = 'status-badge disconnected';
+                pwrStatus.innerHTML = '<i class="fas fa-bolt"></i> No Power';
+            }
+            
+            const pcStatus = document.getElementById('pc-status');
+            if (state.pcOn) {
+                pcStatus.className = 'status-badge connected';
+                pcStatus.innerHTML = '<i class="fas fa-power-off"></i> PC Running';
+            } else {
+                pcStatus.className = 'status-badge disconnected';
+                pcStatus.innerHTML = '<i class="fas fa-power-off"></i> PC Off';
+            }
+            
+            // Re-render cables to ensure they snap to right ports
+            updateCables();
+        }
+
+        function checkWin() {
+            if (state.connections.monitorPower && 
+                state.connections.suPower && 
+                state.connections.vga && 
+                state.connections.keyboard && 
+                state.connections.mouse && 
+                state.mainSwitchOn && 
+                state.pcOn) {
+                
+                setTimeout(() => {
+                    document.getElementById('success-modal').classList.add('active');
+                }, 1000);
+            }
+        }
+
+        // Save initial positions
+        document.querySelectorAll('.plug').forEach(plug => {
+            plug.setAttribute('data-init-x', plug.style.left);
+            plug.setAttribute('data-init-y', plug.style.top);
+        });
+
+        // Init cables
+        window.addEventListener('resize', updateCables);
+        setTimeout(updateCables, 100);
+
+        // Simple Audio (Web Audio API synthesis for no external assets)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'snap') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'click') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'boot') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1);
+            }
+        }
+
+    </script>
+</body>
+</html>
