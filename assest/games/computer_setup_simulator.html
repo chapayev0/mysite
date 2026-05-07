@@ -658,14 +658,49 @@
         .login-mode .boot-logo, .desktop .boot-logo { display: none; }
         .desktop .taskbar {
             width: 100%;
-            height: 16px;
+            height: 18px;
             background: rgba(0,0,0,0.6);
-            border-radius: 2px;
+            border-radius: 0 0 8px 8px;
             display: flex;
             align-items: center;
             padding: 0 5px;
+            pointer-events: auto;
+            position: relative;
         }
-        .desktop .start-btn { width: 10px; height: 10px; background: #00D4FF; border-radius: 2px; }
+        .desktop .start-btn { width: 12px; height: 12px; background: #00D4FF; border-radius: 2px; cursor: pointer; pointer-events: auto; }
+        
+        .start-menu {
+            position: absolute;
+            bottom: 20px;
+            left: 5px;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+            padding: 5px;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 50;
+            box-shadow: 2px -2px 10px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .start-menu.active {
+            display: flex;
+        }
+        .start-menu-item {
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+        .start-menu-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
 
         /* Timer & Stars */
         .timer-display {
@@ -793,7 +828,21 @@
             pointer-events: auto; /* enable typing */
         }
         
-        .login-input::placeholder { color: #666; }
+        .lang-switch select {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-color);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .lang-switch select option {
+            background: var(--panel-bg);
+            color: var(--text-color);
+        }
 
     </style>
 </head>
@@ -802,9 +851,15 @@
     <div class="header">
         <div class="title">
             <i class="fas fa-desktop"></i>
-            Computer Setup Simulator
+            <span data-i18n="title">Computer Setup Simulator</span>
         </div>
         <div class="status-panel">
+            <div class="lang-switch">
+                <select id="lang-select" onchange="setLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="si">සිංහල</option>
+                </select>
+            </div>
             <div class="timer-display" id="game-timer">00:00</div>
             <div class="status-badge" id="power-status">
                 <i class="fas fa-bolt"></i> No Power
@@ -820,21 +875,23 @@
         <div class="desk"></div>
 
         <div class="instructions">
-            <h3>Mission Objectives</h3>
+            <h3 data-i18n="missionObj">Mission Objectives</h3>
             <ul id="task-list">
-                <li id="task-monitor-power"><i class="fas fa-plug"></i> Connect Monitor to Main Power</li>
-                <li id="task-su-power"><i class="fas fa-plug"></i> Connect System Unit to Main Power</li>
-                <li id="task-vga"><i class="fas fa-network-wired"></i> Connect Monitor to System Unit (VGA)</li>
-                <li id="task-keyboard"><i class="fas fa-keyboard"></i> Connect Keyboard to System Unit</li>
-                <li id="task-mouse"><i class="fas fa-mouse"></i> Connect Mouse to System Unit</li>
-                <li id="task-switch"><i class="fas fa-toggle-on"></i> Turn on Main Switch</li>
-                <li id="task-boot"><i class="fas fa-power-off"></i> Turn on System Unit</li>
+                <li id="task-monitor-power"><i class="fas fa-plug"></i> <span data-i18n="taskMonPwr">Connect Monitor to Main Power</span></li>
+                <li id="task-su-power"><i class="fas fa-plug"></i> <span data-i18n="taskSuPwr">Connect System Unit to Main Power</span></li>
+                <li id="task-vga"><i class="fas fa-network-wired"></i> <span data-i18n="taskVga">Connect Monitor to System Unit (VGA)</span></li>
+                <li id="task-keyboard"><i class="fas fa-keyboard"></i> <span data-i18n="taskKey">Connect Keyboard to System Unit</span></li>
+                <li id="task-mouse"><i class="fas fa-mouse"></i> <span data-i18n="taskMouse">Connect Mouse to System Unit</span></li>
+                <li id="task-switch"><i class="fas fa-toggle-on"></i> <span data-i18n="taskSwitch">Turn on Main Switch</span></li>
+                <li id="task-boot"><i class="fas fa-power-off"></i> <span data-i18n="taskBoot">Turn on System Unit</span></li>
+                <li id="task-os-shutdown"><i class="fas fa-power-off"></i> <span data-i18n="taskOsShutdown">Shut Down OS (Desktop)</span></li>
+                <li id="task-switch-off"><i class="fas fa-toggle-off"></i> <span data-i18n="taskSwitchOff">Turn off Main Switch</span></li>
             </ul>
         </div>
 
         <!-- Devices -->
         <div class="device" id="monitor">
-            <div class="device-label">Monitor</div>
+            <div class="device-label" data-i18n="monitor">Monitor</div>
             <div class="monitor-screen">
                 <div class="screen-content">
                     <i class="fas fa-windows boot-logo" style="font-size: 40px; color: #00D4FF;"></i>
@@ -842,7 +899,12 @@
                         <div class="login-avatar"><i class="fas fa-user"></i></div>
                         <input type="text" class="login-input" id="player-name" placeholder="Type your name & press Enter..." autocomplete="off">
                     </div>
-                    <div class="taskbar" style="display:none;"><div class="start-btn"></div></div>
+                    <div class="taskbar" style="display:none;">
+                        <div class="start-btn" id="start-btn"></div>
+                    </div>
+                    <div class="start-menu" id="start-menu">
+                        <div class="start-menu-item" id="btn-shutdown"><i class="fas fa-power-off"></i> <span data-i18n="shutdownBtn">Shut Down</span></div>
+                    </div>
                 </div>
                 <div class="power-led" id="monitor-led"></div>
             </div>
@@ -851,7 +913,7 @@
         </div>
 
         <div class="device" id="system-unit">
-            <div class="device-label">System Unit</div>
+            <div class="device-label" data-i18n="systemUnit">System Unit</div>
             <div class="tower">
                 <div class="back-panel">
                     <div class="port power-port target-port" data-type="power-su" data-tooltip="Power In"></div>
@@ -868,7 +930,7 @@
         </div>
 
         <div class="device" id="keyboard">
-            <div class="device-label">Keyboard</div>
+            <div class="device-label" data-i18n="keyboard">Keyboard</div>
             <div class="keyboard-body">
                 <div class="key-row"><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div></div>
                 <div class="key-row"><div class="key" style="flex: 1.5"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="flex: 1.5"></div></div>
@@ -879,14 +941,14 @@
         </div>
 
         <div class="device" id="mouse">
-            <div class="device-label">Mouse</div>
+            <div class="device-label" data-i18n="mouse">Mouse</div>
             <div class="mouse-body">
                 <div class="mouse-wheel"></div>
             </div>
         </div>
 
         <div class="device" id="wall-socket">
-            <div class="device-label" style="top: -30px; position: absolute;">Wall Socket</div>
+            <div class="device-label" style="top: -30px; position: absolute;" data-i18n="wallSocket">Wall Socket</div>
             <div class="socket-port target-port" data-type="power" data-tooltip="Main Socket 1">
                 <div class="socket-holes"><div class="hole earth"></div><div class="hole"></div><div class="hole"></div></div>
             </div>
@@ -918,7 +980,7 @@
     <div class="modal-overlay" id="success-modal">
         <div class="modal-content">
             <i class="fas fa-check-circle modal-icon"></i>
-            <h2 class="modal-title">System Ready!</h2>
+            <h2 class="modal-title" data-i18n="systemReady">System Ready!</h2>
             <div class="stars-container" id="stars-container">
                 <i class="fas fa-star star"></i>
                 <i class="fas fa-star star"></i>
@@ -926,9 +988,9 @@
             </div>
             <p class="modal-text" id="modal-text-msg">Great job! You have successfully connected all the components and booted up the computer.</p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button class="btn" onclick="document.getElementById('success-modal').classList.remove('active')"><i class="fas fa-times"></i> Close</button>
-                <button class="btn" onclick="location.reload()" style="background: transparent; border: 1px solid var(--accent-cyan);"><i class="fas fa-redo"></i> Restart</button>
-                <a href="../../playground.php" class="btn" style="background: transparent; border: 1px solid var(--accent-purple);">Playground</a>
+                <button class="btn" onclick="document.getElementById('success-modal').classList.remove('active')"><i class="fas fa-times"></i> <span data-i18n="closeBtn">Close</span></button>
+                <button class="btn" onclick="location.reload()" style="background: transparent; border: 1px solid var(--accent-cyan);"><i class="fas fa-redo"></i> <span data-i18n="restartBtn">Restart</span></button>
+                <a href="../../playground.php" class="btn" style="background: transparent; border: 1px solid var(--accent-purple);"><span data-i18n="playgroundBtn">Playground</span></a>
             </div>
         </div>
     </div>
@@ -936,6 +998,149 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
+        // Translations
+        const translations = {
+            en: {
+                title: "Computer Setup Simulator",
+                missionObj: "Mission Objectives",
+                taskMonPwr: "Connect Monitor to Main Power",
+                taskSuPwr: "Connect System Unit to Main Power",
+                taskVga: "Connect Monitor to System Unit (VGA)",
+                taskKey: "Connect Keyboard to System Unit",
+                taskMouse: "Connect Mouse to System Unit",
+                taskSwitch: "Turn on Main Switch",
+                taskBoot: "Turn on System Unit",
+                taskOsShutdown: "Shut Down OS (Desktop)",
+                taskSwitchOff: "Turn off Main Switch",
+                monitor: "Monitor",
+                systemUnit: "System Unit",
+                keyboard: "Keyboard",
+                mouse: "Mouse",
+                wallSocket: "Wall Socket",
+                systemReady: "System Ready!",
+                systemReadyMsg: "Great job! You have successfully connected all the components and booted up the computer.",
+                closeBtn: "Close",
+                restartBtn: "Restart",
+                playgroundBtn: "Playground",
+                shutdownBtn: "Shut Down",
+                placeholder: "Type your name & press Enter...",
+                
+                // Dynamic Status
+                noPower: "No Power",
+                powerOn: "Power On",
+                pcOff: "PC Off",
+                pcRunning: "PC Running",
+                
+                // Dynamic Toasts
+                tPwrConnTitle: "Power Connected",
+                tPwrConnMsg: "The Monitor now has power from the wall socket!",
+                tMainPwrTitle: "Main Power Connected",
+                tMainPwrMsg: "The System Unit is plugged into the wall socket!",
+                tVgaTitle: "Data Cable Connected",
+                tVgaMsg: "The VGA cable carries video signals from the System Unit to the Monitor.",
+                tKeyTitle: "Input Device Ready",
+                tKeyMsg: "The Keyboard allows you to type data into the computer.",
+                tMouseTitle: "Input Device Ready",
+                tMouseMsg: "The Mouse lets you point and click on the screen.",
+                tBootTitle: "Booting Up!",
+                tBootMsg: "The CPU is loading the Operating System.",
+                tShutTitle: "Shutting Down...",
+                tShutMsg: "The operating system is safely shutting down.",
+                tSysOffTitle: "System Off",
+                tSysOffMsg: "PC has safely shut down. You may now switch off the main wall outlet.",
+                tWelcomeTitle: "Welcome!",
+                tWelcomeMsg: "Hello, {name}! Your computer is fully set up.",
+                tPerfectTitle: "Perfect!",
+                tPerfectMsg: "You have successfully and safely shut down the computer.",
+                tSimCompMsg: "Perfect! You have successfully learned how to set up AND safely shut down a computer. Great job!",
+                tSimCompTitle: "Simulation Complete!",
+                tAmazingMsg: "Amazing speed! You set up the computer perfectly in record time!",
+                tWellDoneMsg: "Well done! You have a good understanding of computer setup."
+            },
+            si: {
+                title: "පරිගණක සැකසුම් සිමියුලේටරය",
+                missionObj: "මෙහෙයුම් අරමුණු",
+                taskMonPwr: "මොනිටරය ප්‍රධාන විදුලියට සම්බන්ධ කරන්න",
+                taskSuPwr: "පද්ධති ඒකකය ප්‍රධාන විදුලියට සම්බන්ධ කරන්න",
+                taskVga: "මොනිටරය පද්ධති ඒකකයට සම්බන්ධ කරන්න (VGA)",
+                taskKey: "යතුරුපුවරුව පද්ධති ඒකකයට සම්බන්ධ කරන්න",
+                taskMouse: "මූසිකය පද්ධති ඒකකයට සම්බන්ධ කරන්න",
+                taskSwitch: "ප්‍රධාන ස්විචය සක්‍රිය කරන්න",
+                taskBoot: "පද්ධති ඒකකය සක්‍රිය කරන්න",
+                taskOsShutdown: "OS එක අක්‍රිය කරන්න (ඩෙස්ක්ටොප්)",
+                taskSwitchOff: "ප්‍රධාන ස්විචය අක්‍රිය කරන්න",
+                monitor: "මොනිටරය",
+                systemUnit: "පද්ධති ඒකකය",
+                keyboard: "යතුරුපුවරුව",
+                mouse: "මූසිකය",
+                wallSocket: "ප්‍රධාන පේනුව",
+                systemReady: "පද්ධතිය සූදානම්!",
+                systemReadyMsg: "විශිෂ්ටයි! ඔබ සියලුම උපාංග සාර්ථකව සම්බන්ධ කර පරිගණකය ආරම්භ කර ඇත.",
+                closeBtn: "වසන්න",
+                restartBtn: "නැවත ආරම්භ කරන්න",
+                playgroundBtn: "ක්‍රීඩා පිටිය",
+                shutdownBtn: "අක්‍රිය කරන්න",
+                placeholder: "ඔබේ නම ලියා Enter ඔබන්න...",
+                
+                noPower: "විදුලිය නැත",
+                powerOn: "විදුලිය ඇත",
+                pcOff: "PC අක්‍රියයි",
+                pcRunning: "PC ක්‍රියාත්මකයි",
+                
+                tPwrConnTitle: "විදුලිය සම්බන්ධයි",
+                tPwrConnMsg: "මොනිටරයට දැන් බිත්තියේ සොකට්ටුවෙන් විදුලිය ලැබේ!",
+                tMainPwrTitle: "ප්‍රධාන විදුලිය සම්බන්ධයි",
+                tMainPwrMsg: "පද්ධති ඒකකය බිත්තියේ සොකට්ටුවට පේනුගත කර ඇත!",
+                tVgaTitle: "දත්ත කේබලය සම්බන්ධයි",
+                tVgaMsg: "VGA කේබලය මඟින් පද්ධති ඒකකයේ සිට මොනිටරයට වීඩියෝ සංඥා ගෙන යයි.",
+                tKeyTitle: "ආදාන උපාංගය සූදානම්",
+                tKeyMsg: "යතුරුපුවරුව ඔබට පරිගණකයට දත්ත ඇතුළත් කිරීමට ඉඩ සලසයි.",
+                tMouseTitle: "ආදාන උපාංගය සූදානම්",
+                tMouseMsg: "මූසිකය ඔබට තිරය මත පෙන්වීමට සහ ක්ලික් කිරීමට ඉඩ දෙයි.",
+                tBootTitle: "ආරම්භ වේ!",
+                tBootMsg: "CPU එක මඟින් මෙහෙයුම් පද්ධතිය (OS) මතකයට පටවයි.",
+                tShutTitle: "අක්‍රිය වෙමින් පවතී...",
+                tShutMsg: "මෙහෙයුම් පද්ධතිය ආරක්ෂිතව අක්‍රිය වෙමින් පවතී.",
+                tSysOffTitle: "පද්ධතිය අක්‍රියයි",
+                tSysOffMsg: "PC එක ආරක්ෂිතව අක්‍රිය විය. ඔබට දැන් ප්‍රධාන විදුලි ස්විචය අක්‍රිය කළ හැක.",
+                tWelcomeTitle: "ආයුබෝවන්!",
+                tWelcomeMsg: "හෙලෝ, {name}! ඔබගේ පරිගණකය සම්පූර්ණයෙන්ම සකසා ඇත.",
+                tPerfectTitle: "විශිෂ්ටයි!",
+                tPerfectMsg: "ඔබ පරිගණකය සාර්ථකව සහ ආරක්ෂිතව අක්‍රිය කර ඇත.",
+                tSimCompMsg: "විශිෂ්ටයි! ඔබ පරිගණකයක් නිසි පරිදි සකසන ආකාරය සහ ආරක්ෂිතව අක්‍රිය කරන ආකාරය සාර්ථකව ඉගෙන ගෙන ඇත.",
+                tSimCompTitle: "සිමියුලේෂනය සම්පූර්ණයි!",
+                tAmazingMsg: "විශ්මයජනක වේගයක්! ඔබ වාර්තාගත වේලාවකින් පරිගණකය නිවැරදිව සකසා ඇත!",
+                tWellDoneMsg: "හොඳින් කළා! පරිගණක සැකසුම් පිළිබඳ ඔබට හොඳ අවබෝධයක් ඇත."
+            }
+        };
+
+        let currentLang = 'en';
+
+        function t(key, vars={}) {
+            let text = translations[currentLang][key] || key;
+            for(let v in vars) text = text.replace('{'+v+'}', vars[v]);
+            return text;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            
+            // Update static elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+            
+            // Update placeholders
+            const playerNameInput = document.getElementById('player-name');
+            if (playerNameInput) playerNameInput.placeholder = t('placeholder');
+            
+            // Re-run update logic to refresh dynamic text
+            updateLogic();
+        }
+
         // State
         const state = {
             connections: {
@@ -1192,11 +1397,11 @@
             
             // Update state
             const id = plug.id;
-            if (id === 'plug-monitor-power') { state.connections.monitorPower = true; showToast("Power Connected", "The Monitor now has power from the wall socket!", "fas fa-plug"); }
-            if (id === 'plug-su-power') { state.connections.suPower = true; showToast("Main Power Connected", "The System Unit is plugged into the wall socket!", "fas fa-plug"); }
-            if (id === 'plug-monitor-vga') { state.connections.vga = true; showToast("Data Cable Connected", "The VGA cable carries video signals from the System Unit to the Monitor.", "fas fa-network-wired"); }
-            if (id === 'plug-keyboard-usb') { state.connections.keyboard = true; showToast("Input Device Ready", "The Keyboard allows you to type data into the computer.", "fas fa-keyboard"); }
-            if (id === 'plug-mouse-usb') { state.connections.mouse = true; showToast("Input Device Ready", "The Mouse lets you point and click on the screen.", "fas fa-mouse"); }
+            if (id === 'plug-monitor-power') { state.connections.monitorPower = true; showToast(t('tPwrConnTitle'), t('tPwrConnMsg'), "fas fa-plug"); }
+            if (id === 'plug-su-power') { state.connections.suPower = true; showToast(t('tMainPwrTitle'), t('tMainPwrMsg'), "fas fa-plug"); }
+            if (id === 'plug-monitor-vga') { state.connections.vga = true; showToast(t('tVgaTitle'), t('tVgaMsg'), "fas fa-network-wired"); }
+            if (id === 'plug-keyboard-usb') { state.connections.keyboard = true; showToast(t('tKeyTitle'), t('tKeyMsg'), "fas fa-keyboard"); }
+            if (id === 'plug-mouse-usb') { state.connections.mouse = true; showToast(t('tMouseTitle'), t('tMouseMsg'), "fas fa-mouse"); }
             
             playSound('snap');
             updateLogic();
@@ -1209,6 +1414,18 @@
             state.mainSwitchOn = this.classList.contains('on');
             playSound('click');
             updateLogic();
+            
+            // Check if this was the final turn off step
+            if (!state.mainSwitchOn && document.getElementById('task-os-shutdown').classList.contains('done')) {
+                document.getElementById('task-switch-off').className = 'done';
+                showToast(t('tPerfectTitle'), t('tPerfectMsg'), "fas fa-check-circle");
+                setTimeout(() => {
+                    document.querySelector('.modal-title').innerText = t('tSimCompTitle');
+                    document.getElementById('modal-text-msg').innerText = t('tSimCompMsg');
+                    document.getElementById('stars-container').style.display = 'none';
+                    document.getElementById('success-modal').classList.add('active');
+                }, 1500);
+            }
         });
 
         document.getElementById('pc-power-btn').addEventListener('click', function() {
@@ -1245,7 +1462,7 @@
                     monitorLed.className = 'power-led on';
                     if (!screen.classList.contains('desktop') && !screen.classList.contains('login-mode')) {
                         screen.classList.add('booting');
-                        showToast("Booting Up!", "The CPU is loading the Operating System.", "fas fa-microchip");
+                        showToast(t('tBootTitle'), t('tBootMsg'), "fas fa-microchip");
                         setTimeout(() => {
                             if (state.pcOn) {
                                 screen.classList.remove('booting');
@@ -1273,19 +1490,19 @@
             const pwrStatus = document.getElementById('power-status');
             if (state.mainSwitchOn) {
                 pwrStatus.className = 'status-badge connected';
-                pwrStatus.innerHTML = '<i class="fas fa-bolt"></i> Power On';
+                pwrStatus.innerHTML = `<i class="fas fa-bolt"></i> ${t('powerOn')}`;
             } else {
                 pwrStatus.className = 'status-badge disconnected';
-                pwrStatus.innerHTML = '<i class="fas fa-bolt"></i> No Power';
+                pwrStatus.innerHTML = `<i class="fas fa-bolt"></i> ${t('noPower')}`;
             }
             
             const pcStatus = document.getElementById('pc-status');
             if (state.pcOn) {
                 pcStatus.className = 'status-badge connected';
-                pcStatus.innerHTML = '<i class="fas fa-power-off"></i> PC Running';
+                pcStatus.innerHTML = `<i class="fas fa-power-off"></i> ${t('pcRunning')}`;
             } else {
                 pcStatus.className = 'status-badge disconnected';
-                pcStatus.innerHTML = '<i class="fas fa-power-off"></i> PC Off';
+                pcStatus.innerHTML = `<i class="fas fa-power-off"></i> ${t('pcOff')}`;
             }
             
             // Re-render cables to ensure they snap to right ports
@@ -1299,9 +1516,41 @@
                 const screen = document.querySelector('.monitor-screen');
                 screen.classList.add('desktop');
                 screen.querySelector('.taskbar').style.display = 'flex';
-                showToast("Welcome!", `Hello, ${name}! Your computer is fully set up.`, "fas fa-smile");
+                showToast(t('tWelcomeTitle'), t('tWelcomeMsg', {name: name}), "fas fa-smile");
                 checkWin();
             }
+        });
+
+        document.getElementById('start-btn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('start-menu').classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#start-menu') && !e.target.closest('#start-btn')) {
+                const menu = document.getElementById('start-menu');
+                if (menu) menu.classList.remove('active');
+            }
+        });
+
+        document.getElementById('btn-shutdown').addEventListener('click', function() {
+            document.getElementById('start-menu').classList.remove('active');
+            showToast(t('tShutTitle'), t('tShutMsg'), "fas fa-spinner");
+            
+            const screen = document.querySelector('.monitor-screen');
+            screen.classList.remove('desktop');
+            screen.querySelector('.taskbar').style.display = 'none';
+            screen.classList.add('login-mode');
+            
+            setTimeout(() => {
+                state.pcOn = false;
+                document.getElementById('pc-power-btn').classList.remove('active');
+                playSound('click');
+                updateLogic();
+                showToast(t('tSysOffTitle'), t('tSysOffMsg'), "fas fa-power-off");
+                
+                document.getElementById('task-os-shutdown').className = 'done';
+            }, 2000);
         });
 
         function checkWin() {
@@ -1328,9 +1577,9 @@
                     }, 1200 + (i*400));
                 }
                 
-                let msg = "Great job! You have successfully connected all the components and booted up the computer.";
-                if (stars === 3) msg = "Amazing speed! You set up the computer perfectly in record time!";
-                else if (stars === 2) msg = "Well done! You have a good understanding of computer setup.";
+                let msg = t('systemReadyMsg');
+                if (stars === 3) msg = t('tAmazingMsg');
+                else if (stars === 2) msg = t('tWellDoneMsg');
                 
                 document.getElementById('modal-text-msg').innerText = msg;
                 
