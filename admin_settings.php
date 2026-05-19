@@ -8,6 +8,50 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Initialize home_section_settings table if it doesn't exist
+$conn->query("CREATE TABLE IF NOT EXISTS `home_section_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `section_key` varchar(50) NOT NULL,
+  `section_name` varchar(100) NOT NULL,
+  `is_enabled` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `section_key` (`section_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+// Seed default sections if the table is empty
+$check_empty = $conn->query("SELECT count(*) as c FROM home_section_settings");
+if ($check_empty) {
+    $row = $check_empty->fetch_assoc();
+    if ($row['c'] == 0) {
+        $default_sections = [
+            'hero' => 'Hero Slider Section',
+            'classes' => 'Our ICT Classes Grid',
+            'promo' => 'Robotics Mastery Promo Banner',
+            'institutes' => 'Partner Institutes Slider',
+            'online' => 'Learn from Anywhere Section',
+            'store' => 'ICT Learning Resources Store',
+            'testimonials' => 'Student Testimonials',
+            'ict_dilhara' => 'ICT with Dilhara Section'
+        ];
+        $stmt = $conn->prepare("INSERT IGNORE INTO home_section_settings (section_key, section_name, is_enabled) VALUES (?, ?, 1)");
+        if ($stmt) {
+            foreach ($default_sections as $key => $name) {
+                $stmt->bind_param("ss", $key, $name);
+                $stmt->execute();
+            }
+            $stmt->close();
+        }
+    }
+}
+
+// Handle section visibility toggle
+if (isset($_GET['toggle_section'])) {
+    $section_key = $conn->real_escape_string($_GET['toggle_section']);
+    $conn->query("UPDATE home_section_settings SET is_enabled = NOT is_enabled WHERE section_key = '$section_key'");
+    header("Location: admin_settings.php?msg=section_toggled");
+    exit();
+}
+
 $message = '';
 
 function execute_sql($conn, $sql, $success_msg) {
@@ -89,6 +133,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .sql-textarea { width: 100%; min-height: 200px; background: #1E293B; color: #E2E8F0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; border: 1px solid #334155; margin-bottom: 1.5rem; box-sizing: border-box; resize: vertical; }
         .sql-textarea:focus { outline: none; border-color: #0066FF; }
 
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #E2E8F0; }
+        th { background: #F1F5F9; font-weight: 600; color: #475569; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; display: inline-block; }
+        .badge-visible { background: #DCFCE7; color: #166534; }
+        .badge-hidden { background: #FEE2E2; color: #991B1B; }
+        .btn-outline { background: transparent; border: 1px solid #CBD5E1; color: #475569; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.875rem; transition: all 0.2s; }
+        .btn-outline:hover { background: #F1F5F9; }
+
         @media (max-width: 768px) { .main-content { margin-left: 0; } }
     </style>
 </head>
@@ -102,7 +156,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h1>Settings</h1>
             </div>
 
+            <?php if (isset($_GET['msg']) && $_GET['msg'] === 'section_toggled'): ?>
+                <div class="success-msg">Home page section visibility updated successfully.</div>
+            <?php endif; ?>
             <?php echo $message; ?>
+
+            <div class="card" style="max-width: 100%;">
+                <h2>Home Page Sections Visibility</h2>
+                <p>
+                    Enable or disable major sections on the main public home page. Hidden sections are instantly removed from the visitor layout.
+                </p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Section Identifier</th>
+                                <th>Section Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $sections_res = $conn->query("SELECT * FROM home_section_settings ORDER BY id ASC");
+                            if ($sections_res && $sections_res->num_rows > 0) {
+                                while ($sec = $sections_res->fetch_assoc()) {
+                            ?>
+                            <tr>
+                                <td><code><?php echo htmlspecialchars($sec['section_key']); ?></code></td>
+                                <td><strong><?php echo htmlspecialchars($sec['section_name']); ?></strong></td>
+                                <td>
+                                    <?php if ($sec['is_enabled']): ?>
+                                        <span class="badge badge-visible">Enabled (Visible)</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-hidden">Disabled (Hidden)</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="?toggle_section=<?php echo urlencode($sec['section_key']); ?>" class="btn-outline">
+                                        <?php echo $sec['is_enabled'] ? 'Disable' : 'Enable'; ?>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php
+                                }
+                            } else {
+                                echo "<tr><td colspan='4'>No section settings available.</td></tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <div class="card">
                 <h2>Database Backup</h2>

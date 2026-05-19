@@ -1,5 +1,25 @@
 <?php 
 include 'db_connect.php'; 
+
+// Fetch section visibility settings with robust default fallback
+$section_settings = [
+    'hero' => true,
+    'classes' => true,
+    'promo' => true,
+    'institutes' => true,
+    'online' => true,
+    'store' => true,
+    'testimonials' => true,
+    'ict_dilhara' => true
+];
+
+$sec_res = @$conn->query("SELECT section_key, is_enabled FROM home_section_settings");
+if ($sec_res && $sec_res->num_rows > 0) {
+    while ($row = $sec_res->fetch_assoc()) {
+        $section_settings[$row['section_key']] = (bool)$row['is_enabled'];
+    }
+}
+
 $seo_title = "ICT with Dilhara ICT Academy | Excellence in Digital Education";
 $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive tools, and a dynamic learning playground designed for student success.";
 ?>
@@ -1161,6 +1181,7 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
     <?php include 'navbar.php'; ?>
 
     <!-- Hero Section with Slider -->
+    <?php if (!empty($section_settings['hero'])): ?>
     <section class="hero-section" id="home">
         <div class="hero-slider">
             <div class="slide slide-1 active">
@@ -1191,8 +1212,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             <span class="dot" onclick="currentSlide(2)"></span>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Classes Section -->
+    <?php if (!empty($section_settings['classes'])): ?>
     <section class="section" id="classes">
         <div class="section-header">
             <h2 class="section-title">Our ICT Classes</h2>
@@ -1237,8 +1260,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Robotics Promo Banner -->
+    <?php if (!empty($section_settings['promo'])): ?>
     <section class="promo-banner section">
         <div class="promo-content">
             <h2 class="promo-title">Robotics Mastery Course</h2>
@@ -1254,8 +1279,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
         <!-- Tech Background Decoration -->
         <div class="promo-bg-decoration"></div>
     </section>
+    <?php endif; ?>
 
     <!-- Institutes Section -->
+    <?php if (!empty($section_settings['institutes'])): ?>
     <section class="institutes-section" id="institutes">
         <div class="section-header">
             <h2 class="section-title">Partner Institutes</h2>
@@ -1328,8 +1355,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Online Classes Section -->
+    <?php if (!empty($section_settings['online'])): ?>
     <section class="online-section" id="online">
         <div class="online-content">
             <h2 class="online-title">Learn from Anywhere</h2>
@@ -1356,8 +1385,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             <button class="btn btn-white" onclick="openJoinModal()">Join Online Classes Now</button>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Store Section -->
+    <?php if (!empty($section_settings['store'])): ?>
     <section class="section" id="store">
         <div class="section-header">
             <h2 class="section-title">ICT Learning Resources</h2>
@@ -1414,8 +1445,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             <button class="carousel-btn" onclick="scrollProducts(1)">›</button>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Testimonials Section -->
+    <?php if (!empty($section_settings['testimonials'])): ?>
     <section class="section" id="testimonials">
         <div class="section-header">
             <h2 class="section-title">What Our Students Say</h2>
@@ -1460,9 +1493,10 @@ $seo_description = "Join Dilhara ICT Academy for expert-led courses, interactive
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- ICT with Dilhara Section -->
-    <?php include 'ict_section.php'; ?>
+    <?php if (!empty($section_settings['ict_dilhara'])) include 'ict_section.php'; ?>
 
     <!-- Footer -->
     <?php include 'footer.php'; ?>
