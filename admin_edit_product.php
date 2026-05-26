@@ -23,10 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
+    $category = isset($_POST['category']) ? $_POST['category'] : 'General';
 
     // Update basic info
-    $stmt = $conn->prepare("UPDATE store_products SET name=?, description=?, price=? WHERE id=?");
-    $stmt->bind_param("ssdi", $name, $description, $price, $product_id);
+    $stmt = $conn->prepare("UPDATE store_products SET name=?, description=?, price=?, category=? WHERE id=?");
+    $stmt->bind_param("ssdsi", $name, $description, $price, $category, $product_id);
 
     if ($stmt->execute()) {
         $success_msg = "Product updated successfully!";
@@ -248,6 +249,20 @@ if (!$product) {
                 <div class="form-group">
                     <label class="form-label">Product Name</label>
                     <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($product['name']); ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-control" required>
+                        <?php 
+                        $categories = ['General', 'Books', 'Courses', 'Tools', 'Past Papers'];
+                        $current_cat = isset($product['category']) ? $product['category'] : 'General';
+                        foreach ($categories as $cat) {
+                            $selected = ($cat === $current_cat) ? 'selected' : '';
+                            echo "<option value=\"$cat\" $selected>$cat</option>";
+                        }
+                        ?>
+                    </select>
                 </div>
                 
                 <div class="form-group">

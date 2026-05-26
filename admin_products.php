@@ -16,10 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
+    $category = isset($_POST['category']) ? $_POST['category'] : 'General';
 
     // Insert Product first to get ID
-    $stmt = $conn->prepare("INSERT INTO store_products (name, description, price) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssd", $name, $description, $price);
+    $stmt = $conn->prepare("INSERT INTO store_products (name, description, price, category) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssds", $name, $description, $price, $category);
 
     if ($stmt->execute()) {
         $product_id = $stmt->insert_id;
@@ -315,6 +316,7 @@ if ($result) {
                         <thead>
                             <tr>
                                 <th>Product</th>
+                                <th>Category</th>
                                 <th>Price</th>
                                 <th>Description</th>
                                 <th>Actions</th>
@@ -323,7 +325,7 @@ if ($result) {
                         <tbody>
                             <?php if (empty($products)): ?>
                                 <tr>
-                                    <td colspan="4" style="text-align: center; color: var(--gray);">No products found.</td>
+                                    <td colspan="5" style="text-align: center; color: var(--gray);">No products found.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($products as $product): ?>
@@ -342,6 +344,7 @@ if ($result) {
                                                 <div style="font-weight: 600;"><?php echo htmlspecialchars($product['name']); ?></div>
                                             </div>
                                         </td>
+                                        <td><?php echo htmlspecialchars(isset($product['category']) ? $product['category'] : 'General'); ?></td>
                                         <td>Rs. <?php echo number_format($product['price'], 0); ?></td>
                                         <td style="max-width: 300px; color: var(--gray); font-size: 0.9rem;"><?php echo htmlspecialchars($product['description']); ?></td>
                                         <td>
@@ -370,6 +373,17 @@ if ($result) {
                         <div class="form-group">
                             <label class="form-label">Product Name</label>
                             <input type="text" name="name" class="form-control" placeholder="e.g. O/L ICT Guide" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-control" required>
+                                <option value="General">General</option>
+                                <option value="Books">Books</option>
+                                <option value="Courses">Courses</option>
+                                <option value="Tools">Tools</option>
+                                <option value="Past Papers">Past Papers</option>
+                            </select>
                         </div>
                         
                         <div class="form-group">
