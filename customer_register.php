@@ -1,5 +1,6 @@
 <?php
 include 'db_connect.php';
+require_once 'mail_config.php';
 
 $message = '';
 $error = '';
@@ -43,12 +44,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                            "Reply-To: noreply@" . $_SERVER['HTTP_HOST'] . "\r\n" .
                            "X-Mailer: PHP/" . phpversion();
 
-                // Suppress warning if mail is not configured locally by using @
-                if(@mail($email, $subject, $body, $headers)) {
+                // Send email using SMTP
+                if(send_email($email, $full_name, $subject, $body)) {
                     $message = "Registration successful! Please check your email to activate your account.";
                 } else {
-                    // Fallback for local development environments where mail() isn't configured
-                    $message = "Registration successful! <br><br><span style='color:var(--gray);font-size:0.9rem;'>(Note: Email server not configured. <a href='$activation_link' style='color:var(--primary);'>Click here to manually activate</a>)</span>";
+                    $error = "Registration successful, but failed to send activation email. Please contact support.";
                 }
             } else {
                 $error = "Error: " . $conn->error;
