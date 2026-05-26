@@ -39,6 +39,9 @@ function send_email($to_email, $to_name, $subject, $body) {
         $mail->send();
         return true;
     } catch (Exception $e) {
+        // Log error to a local file for debugging SMTP issues
+        $log_message = "[" . date('Y-m-d H:i:s') . "] Mailer Error: " . $mail->ErrorInfo . " | Exception: " . $e->getMessage() . "\n";
+        file_put_contents(__DIR__ . '/mail_error.log', $log_message, FILE_APPEND);
         return false;
     }
 }

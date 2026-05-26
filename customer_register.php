@@ -25,11 +25,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $token = bin2hex(random_bytes(16));
+            $temp_username = 'cust_' . bin2hex(random_bytes(8));
             
-            $sql = "INSERT INTO users (full_name, email, phone, password, role, is_active, verification_token) 
-                    VALUES ('$full_name', '$email', '$phone', '$hashed_password', 'customer', 0, '$token')";
+            $sql = "INSERT INTO users (username, full_name, email, phone, password, role, is_active, verification_token) 
+                    VALUES ('$temp_username', '$full_name', '$email', '$phone', '$hashed_password', 'customer', 0, '$token')";
             
             if ($conn->query($sql) === TRUE) {
+                $user_id = $conn->insert_id;
+                // Generate clean username from name + ID
+                $clean_name = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $full_name));
+                if (empty($clean_name)) {
+                    $clean_name = "customer";
+                }
+                $final_username = substr($clean_name, 0, 15) . $user_id;
+                $conn->query("UPDATE users SET username = '$final_username' WHERE id = $user_id");
                 // Send email
                 // Note: $_SERVER['HTTP_HOST'] gets the host name.
                 // We construct the full URL to activate.php
