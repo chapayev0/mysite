@@ -222,5 +222,87 @@
                     behavior: 'smooth'
                 });
             });
+
+            // AJAX Cart Handling
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.getAttribute('action') === 'cart_action.php') {
+                    const redirectInput = form.querySelector('input[name="redirect"]');
+                    if (redirectInput && redirectInput.value === 'checkout.php') {
+                        return; // Let normal form submission happen for Buy Now
+                    }
+
+                    e.preventDefault();
+                    
+                    const submitter = e.submitter;
+                    const formData = new FormData(form);
+                    
+                    if (submitter && submitter.name) {
+                        formData.append(submitter.name, submitter.value);
+                    }
+
+                    fetch('cart_action.php', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }).then(response => response.text())
+                      .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // 1. Update Cart Bubble
+                        const newCartBubble = doc.querySelector('#cart-bubble-count');
+                        const currentCartBubble = document.querySelector('#cart-bubble-count');
+                        
+                        if (newCartBubble && currentCartBubble) {
+                            currentCartBubble.innerHTML = newCartBubble.innerHTML;
+                        } else if (newCartBubble) {
+                            const cartLink = document.querySelector('a[href="cart.php"]');
+                            if (cartLink) {
+                                cartLink.innerHTML = `🛒 Cart <span id="cart-bubble-count" style="position:absolute; top:-5px; right:-5px; background:#3b82f6; color:#ffffff; border-radius:50%; padding:2px 6px; font-size:0.75rem; line-height:1;">${newCartBubble.innerHTML}</span>`;
+                            }
+                        } else if (currentCartBubble && !newCartBubble) {
+                            currentCartBubble.remove();
+                        }
+
+                        // 2. If on cart page, update cart contents
+                        const currentCartContainer = document.querySelector('.cart-container');
+                        const newCartContainer = doc.querySelector('.cart-container');
+                        if (currentCartContainer && newCartContainer) {
+                            currentCartContainer.innerHTML = newCartContainer.innerHTML;
+                        }
+
+                        // 3. Show Toast for 'add' action
+                        const actionInput = form.querySelector('input[name="action"]');
+                        if (actionInput && actionInput.value === 'add') {
+                            showToast('Item added to cart!');
+                        }
+                    }).catch(err => console.error('Cart update error:', err));
+                }
+            });
+
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.textContent = message;
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.right = '20px';
+                toast.style.background = '#0F172A';
+                toast.style.color = '#fff';
+                toast.style.padding = '12px 24px';
+                toast.style.borderRadius = '8px';
+                toast.style.zIndex = '9999';
+                toast.style.transition = 'opacity 0.3s ease';
+                toast.style.opacity = '0';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => { toast.style.opacity = '1'; }, 10);
+                setTimeout(() => { 
+                    toast.style.opacity = '0'; 
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
         </script>
     </footer>

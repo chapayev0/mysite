@@ -338,7 +338,7 @@ $cart_count = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 <a href="cart.php" class="btn btn-outline" style="position:relative;">
                     🛒 Cart 
                     <?php if($cart_count > 0): ?>
-                        <span style="position:absolute; top:-5px; right:-5px; background:var(--accent, #EC4899); color:white; border-radius:50%; padding:2px 6px; font-size:0.75rem; line-height:1;"><?php echo $cart_count; ?></span>
+                        <span id="cart-bubble-count" style="position:absolute; top:-5px; right:-5px; background:#3b82f6; color:#ffffff; border-radius:50%; padding:2px 6px; font-size:0.75rem; line-height:1;"><?php echo $cart_count; ?></span>
                     <?php endif; ?>
                 </a>
                 <?php if(isset($_SESSION['user_id'])): ?>

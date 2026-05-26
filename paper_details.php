@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include 'db_connect.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

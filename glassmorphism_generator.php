@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include 'db_connect.php';
 
 $seo_title = "CSS Glassmorphism Generator | Free UI Tools";
