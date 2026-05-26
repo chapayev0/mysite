@@ -205,6 +205,7 @@ if(isset($stmt)) $stmt->close();
         }
 
         .store-container {
+            width: 100%;
             max-width: 1400px;
             margin: 0 auto;
             padding: 4rem 2rem;
@@ -212,6 +213,8 @@ if(isset($stmt)) $stmt->close();
             grid-template-columns: 280px 1fr;
             gap: 3rem;
             flex: 1;
+            align-items: start;
+            box-sizing: border-box;
         }
 
         /* Sidebar Filter */
