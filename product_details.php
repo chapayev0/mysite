@@ -310,8 +310,20 @@ $main_image = $images[0]; // First one is primary or first added
                 <div class="product-price-large">Rs. <?php echo number_format($product['price'], 0); ?></div>
                 <p class="product-description-large"><?php echo htmlspecialchars($product['description']); ?></p>
                 <div class="action-buttons">
-                    <button class="btn-large btn-primary-large">Buy Now</button>
-                    <button class="btn-large btn-secondary-large">Add to Cart</button>
+                    <form action="cart_action.php" method="POST" style="display:inline-block;">
+                        <input type="hidden" name="action" value="add">
+                        <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                        <input type="hidden" name="qty" value="1">
+                        <input type="hidden" name="redirect" value="checkout.php">
+                        <button type="submit" class="btn-large btn-primary-large">Buy Now</button>
+                    </form>
+                    <form action="cart_action.php" method="POST" style="display:inline-block;">
+                        <input type="hidden" name="action" value="add">
+                        <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                        <input type="hidden" name="qty" value="1">
+                        <input type="hidden" name="redirect" value="product_details.php?id=<?php echo $product['id']; ?>">
+                        <button type="submit" class="btn-large btn-secondary-large">Add to Cart</button>
+                    </form>
                 </div>
             </div>
         </div>

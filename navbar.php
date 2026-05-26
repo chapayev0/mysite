@@ -1,4 +1,10 @@
-<?php $current_page = basename($_SERVER['PHP_SELF']); ?>
+<?php 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$current_page = basename($_SERVER['PHP_SELF']); 
+$cart_count = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
+?>
 <style>
     /* Navbar Styles */
     .navbar {
@@ -329,8 +335,19 @@
                 ?>
             </ul>
             <div class="nav-buttons">
-                <a href="login.php" class="btn btn-outline">Login</a>
-                <a href="register.php" class="btn btn-primary" style="text-decoration:none;">Register</a>
+                <a href="cart.php" class="btn btn-outline" style="position:relative;">
+                    🛒 Cart 
+                    <?php if($cart_count > 0): ?>
+                        <span style="position:absolute; top:-5px; right:-5px; background:var(--accent, #EC4899); color:white; border-radius:50%; padding:2px 6px; font-size:0.75rem; line-height:1;"><?php echo $cart_count; ?></span>
+                    <?php endif; ?>
+                </a>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <a href="<?php echo $_SESSION['role'] == 'admin' ? 'admin_dashboard.php' : ($_SESSION['role'] == 'student' ? 'student_dashboard.php' : 'customer_dashboard.php'); ?>" class="btn btn-outline">Dashboard</a>
+                    <a href="logout.php" class="btn btn-primary" style="text-decoration:none;">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="btn btn-outline">Login</a>
+                    <a href="register.php" class="btn btn-primary" style="text-decoration:none;">Register</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

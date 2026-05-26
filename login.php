@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Try to find user by email or username (prepared statement)
-    $stmt = $conn->prepare('SELECT id, email, IFNULL(username, "") as username, password, role FROM users WHERE email = ? OR username = ? LIMIT 1');
+    $stmt = $conn->prepare('SELECT id, email, IFNULL(username, "") as username, password, role, is_active FROM users WHERE email = ? OR username = ? LIMIT 1');
     $stmt->bind_param('ss', $identifier, $identifier);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -23,18 +23,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result && $result->num_rows == 1) {
         $row = $result->fetch_assoc();
         if (password_verify($password, $row['password'])) {
-            session_regenerate_id(true); // Prevent Session Fixation
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['role'] = $row['role'];
-            $_SESSION['email'] = $row['email'];
-            $_SESSION['username'] = $row['username'];
-
-            if ($row['role'] == 'admin') {
-                header("Location: admin_dashboard.php");
+            if ($row['role'] == 'customer' && $row['is_active'] == 0) {
+                $error = "Please activate your account using the link sent to your email.";
             } else {
-                header("Location: student_dashboard.php");
+                session_regenerate_id(true); // Prevent Session Fixation
+                $_SESSION['user_id'] = $row['id'];
+                $_SESSION['role'] = $row['role'];
+                $_SESSION['email'] = $row['email'];
+                $_SESSION['username'] = $row['username'];
+
+                if (isset($_GET['redirect'])) {
+                    $redirect = filter_var($_GET['redirect'], FILTER_SANITIZE_URL);
+                    header("Location: $redirect");
+                } elseif ($row['role'] == 'admin') {
+                    header("Location: admin_dashboard.php");
+                } elseif ($row['role'] == 'customer') {
+                    header("Location: customer_dashboard.php");
+                } else {
+                    header("Location: student_dashboard.php");
+                }
+                exit();
             }
-            exit();
         } else {
             $error = "Invalid password.";
         }
@@ -165,10 +174,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="error-msg"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="">
+        <?php $action_url = isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>
+        <form method="POST" action="<?php echo $action_url; ?>">
             <?php csrf_input(); ?>
             <div class="form-group">
-                <label for="username">Username</label>
+                <label for="username">Username / Email</label>
                 <input type="text" id="username" name="username" class="form-control" required>
             </div>
             <div class="form-group">
@@ -177,6 +187,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <button type="submit" class="btn-submit">Login</button>
         </form>
+        
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.95rem;">
+            Don't have an account? <br>
+            <a href="customer_register.php" style="color: var(--primary); font-weight: 600; text-decoration: none;">Register as Customer</a> or 
+            <a href="register.php" style="color: var(--secondary); font-weight: 600; text-decoration: none;">Register as Student</a>
+        </div>
         
         <a href="index.php" class="back-link">← Back to Home</a>
     </div>
